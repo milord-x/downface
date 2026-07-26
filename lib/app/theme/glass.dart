@@ -46,8 +46,8 @@ class LiquidGlass extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withValues(alpha: 0.06),
-                Colors.white.withValues(alpha: 0.0),
+                AppColors.white.withValues(alpha: 0.06),
+                AppColors.white.withValues(alpha: 0.0),
               ],
             ),
           ),
