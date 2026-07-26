@@ -1,0 +1,43 @@
+workflows:
+  ios-testflight:
+    name: iOS → TestFlight
+    max_build_duration: 60
+
+    integrations:
+      app_store_connect: codemagic-key
+
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        provisioning_profiles:
+          - flex_profile
+        certificates:
+          - flex_distribution
+      vars:
+        BUNDLE_ID: com.flexapp.flex
+
+    scripts:
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Run tests
+        script: flutter test
+
+      - name: Set up code signing
+        script: xcode-project use-profiles
+
+      - name: Build ipa
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - flutter_drive.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
