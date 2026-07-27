@@ -35,7 +35,7 @@ struct ReminderOnboardingView: View {
             GlassEffectContainer(spacing: 16) {
                 VStack(spacing: 12) {
                     Button {
-                        bridge.setRemindersEnabled(true, hour: bridge.snapshot.reminderHour)
+                        bridge.setRemindersEnabled(true, hours: bridge.snapshot.reminderHours)
                         dismiss()
                     } label: {
                         Text("enable reminders")
