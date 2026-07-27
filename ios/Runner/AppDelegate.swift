@@ -4,15 +4,24 @@ import UIKit
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   private let faceTracker = FaceTracker()
+  private let flutterEngine = FlutterEngine(name: "downface_engine")
 
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
-    if let registrar = self.registrar(forPlugin: "FaceTracker") {
+    flutterEngine.run()
+    GeneratedPluginRegistrant.register(with: flutterEngine)
+
+    if let registrar = flutterEngine.registrar(forPlugin: "FaceTracker") {
       faceTracker.register(with: registrar)
     }
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    NativeUIBridge.shared.attach(messenger: flutterEngine.binaryMessenger)
+
+    window = UIWindow(frame: UIScreen.main.bounds)
+    window?.rootViewController = NativeRootViewController()
+    window?.makeKeyAndVisible()
+
+    return true
   }
 }

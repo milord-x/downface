@@ -1,16 +1,32 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 import 'db/app_database.dart';
 import 'models/streak.dart';
 import 'models/workout.dart';
+import 'reminders_service.dart';
 
 class AppState extends ChangeNotifier {
+  final _reminders = RemindersService();
+
   List<Workout> workouts = [];
   bool loaded = false;
+  bool remindersEnabled = false;
+  int reminderHour = 19;
 
   Future<void> load() async {
     workouts = await AppDatabase.instance.allWorkouts();
+    remindersEnabled = await _reminders.isEnabled();
+    reminderHour = await _reminders.hour();
     loaded = true;
+    notifyListeners();
+  }
+
+  Future<void> setReminders(bool enabled, int hour) async {
+    await _reminders.setEnabled(enabled, hour: hour);
+    remindersEnabled = enabled;
+    reminderHour = hour;
     notifyListeners();
   }
 
@@ -42,4 +58,42 @@ class AppState extends ChangeNotifier {
   }
 
   int get repsAllTime => workouts.fold(0, (sum, w) => sum + w.totalReps);
+
+  String toSnapshotJson() {
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final monthStart = DateTime(now.year, now.month);
+
+    return jsonEncode({
+      'workouts': workouts
+          .map((w) => {
+                'id': w.id ?? 0,
+                'startedAt': w.startedAt.millisecondsSinceEpoch.toDouble(),
+                'endedAt': w.endedAt.millisecondsSinceEpoch.toDouble(),
+                'sets': w.sets
+                    .map((s) => {
+                          'reps': s.reps,
+                          'startedAt': s.startedAt.millisecondsSinceEpoch.toDouble(),
+                          'endedAt': s.endedAt.millisecondsSinceEpoch.toDouble(),
+                          'restBeforeSeconds': s.restBeforeSeconds,
+                          'repDurationsMs': s.repDurationsMs,
+                        })
+                    .toList(),
+              })
+          .toList(),
+      'streak': {
+        'current': streak.current,
+        'longest': streak.longest,
+        'brokenToday': streak.brokenToday,
+      },
+      'repsToday': repsToday,
+      'repsThisWeek': repsSince(weekStart),
+      'repsThisMonth': repsSince(monthStart),
+      'repsAllTime': repsAllTime,
+      'activeDayTimestamps':
+          activeDays.map((d) => d.millisecondsSinceEpoch.toDouble()).toList(),
+      'remindersEnabled': remindersEnabled,
+      'reminderHour': reminderHour,
+    });
+  }
 }
