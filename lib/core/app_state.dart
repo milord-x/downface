@@ -13,23 +13,31 @@ class AppState extends ChangeNotifier {
   List<Workout> workouts = [];
   bool loaded = false;
   bool remindersEnabled = false;
-  int reminderHour = 19;
+  List<int> reminderHours = [19];
   bool remindersAsked = false;
+
+  bool get _didWorkoutToday => activeDays.contains(DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+      ));
+
+  bool get _streakAtRisk => !_didWorkoutToday && streak.current > 0;
 
   Future<void> load() async {
     workouts = await AppDatabase.instance.allWorkouts();
     remindersEnabled = await _reminders.isEnabled();
-    reminderHour = await _reminders.hour();
+    reminderHours = await _reminders.hours();
     remindersAsked = await _reminders.hasBeenAsked();
-    await _reminders.rescheduleIfEnabled();
+    await _reminders.rescheduleIfEnabled(doneToday: _didWorkoutToday, streakAtRisk: _streakAtRisk);
     loaded = true;
     notifyListeners();
   }
 
-  Future<void> setReminders(bool enabled, int hour) async {
-    await _reminders.setEnabled(enabled, hour: hour);
+  Future<void> setReminders(bool enabled, List<int> hours) async {
+    await _reminders.setEnabled(enabled, hours: hours);
     remindersEnabled = enabled;
-    reminderHour = hour;
+    reminderHours = hours;
     remindersAsked = true;
     notifyListeners();
   }
@@ -103,7 +111,7 @@ class AppState extends ChangeNotifier {
       'activeDayTimestamps':
           activeDays.map((d) => d.millisecondsSinceEpoch.toDouble()).toList(),
       'remindersEnabled': remindersEnabled,
-      'reminderHour': reminderHour,
+      'reminderHours': reminderHours,
       'remindersAsked': remindersAsked,
     });
   }

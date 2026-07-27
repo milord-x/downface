@@ -62,7 +62,8 @@ class NativeBridge {
         _pushSnapshot();
       case 'setReminders':
         final args = call.arguments as Map<dynamic, dynamic>;
-        await _appState.setReminders(args['enabled'] as bool, args['hour'] as int);
+        final hours = (args['hours'] as List<dynamic>).cast<int>();
+        await _appState.setReminders(args['enabled'] as bool, hours);
         _pushSnapshot();
       case 'declineReminders':
         await _appState.declineReminders();
@@ -123,11 +124,12 @@ class NativeBridge {
   Future<void> _finishWorkout() async {
     _restToken++;
     final start = _workoutStart;
+    final end = DateTime.now();
     if (start != null && _sets.isNotEmpty) {
       await _appState.addWorkout(Workout(
         id: null,
         startedAt: start,
-        endedAt: DateTime.now(),
+        endedAt: end,
         sets: List.of(_sets),
       ));
       _pushSnapshot();
@@ -136,7 +138,12 @@ class NativeBridge {
     final setCount = _sets.length;
     _sets.clear();
     _workoutStart = null;
-    _channel.invokeMethod('workoutFinished', {'totalReps': totalReps, 'sets': setCount});
+    _channel.invokeMethod('workoutFinished', {
+      'totalReps': totalReps,
+      'sets': setCount,
+      'startedAt': (start ?? end).millisecondsSinceEpoch.toDouble(),
+      'endedAt': end.millisecondsSinceEpoch.toDouble(),
+    });
   }
 
   Future<void> _cancelWorkout() async {

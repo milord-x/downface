@@ -50,6 +50,12 @@
             "state": "translated",
             "value": "トレーニング開始"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "жаттығуды бастау"
+          }
         }
       }
     },
@@ -101,6 +107,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "今日の\n腕立て伏せ"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "бүгінгі\nтартылу саны"
           }
         }
       }
@@ -154,6 +166,12 @@
             "state": "translated",
             "value": "今週"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "осы аптада"
+          }
         }
       }
     },
@@ -205,6 +223,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "今月"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "осы айда"
           }
         }
       }
@@ -258,6 +282,12 @@
             "state": "translated",
             "value": "合計"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "барлығы"
+          }
         }
       }
     },
@@ -309,6 +339,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "月"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дс"
           }
         }
       }
@@ -362,6 +398,12 @@
             "state": "translated",
             "value": "火"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сс"
+          }
         }
       }
     },
@@ -413,6 +455,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "水"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ср"
           }
         }
       }
@@ -466,6 +514,12 @@
             "state": "translated",
             "value": "金"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Жм"
+          }
         }
       }
     },
@@ -517,6 +571,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "土"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сн"
           }
         }
       }
@@ -570,6 +630,12 @@
             "state": "translated",
             "value": "スマホを床に置いて\n画面を自分に向けてください"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "телефонды еденге қой\nэкраны өзіңе қаратып"
+          }
         }
       }
     },
@@ -621,6 +687,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "DownfaceはTrueDepthカメラで頭の動きを追跡します"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downface TrueDepth камерасы арқылы басыңды бақылайды"
           }
         }
       }
@@ -674,6 +746,12 @@
             "state": "translated",
             "value": "この端末にはTrueDepthカメラがありません"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "бұл құрылғыда TrueDepth камерасы жоқ"
+          }
         }
       }
     },
@@ -725,6 +803,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "セット開始"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "сетті бастау"
           }
         }
       }
@@ -778,6 +862,12 @@
             "state": "translated",
             "value": "回"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "қайталау"
+          }
         }
       }
     },
@@ -829,6 +919,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "セット終了"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "сетті аяқтау"
           }
         }
       }
@@ -882,6 +978,12 @@
             "state": "translated",
             "value": "次のセット"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "келесі сет"
+          }
         }
       }
     },
@@ -933,6 +1035,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "トレーニング終了"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "жаттығуды аяқтау"
           }
         }
       }
@@ -986,6 +1094,12 @@
             "state": "translated",
             "value": "完了"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "дайын"
+          }
         }
       }
     },
@@ -1037,6 +1151,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "このトレーニングを破棄しますか？"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "бұл жаттығудан бас тартасыз ба?"
           }
         }
       }
@@ -1090,6 +1210,12 @@
             "state": "translated",
             "value": "続ける"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "жалғастыру"
+          }
         }
       }
     },
@@ -1141,6 +1267,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "破棄"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "бас тарту"
           }
         }
       }
@@ -1194,6 +1326,12 @@
             "state": "translated",
             "value": "このセッションの進行状況は保存されません。"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "бұл сессияның нәтижесі сақталмайды."
+          }
         }
       }
     },
@@ -1245,6 +1383,128 @@
           "stringUnit": {
             "state": "translated",
             "value": "休憩"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "демалыс"
+          }
+        }
+      }
+    },
+    "%lld set done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld set done"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld подход выполнен"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld serie hecha"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld série feita"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Satz erledigt"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld série terminée"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已完成 %lld 组"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lldセット完了"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld сет орындалды"
+          }
+        }
+      }
+    },
+    "%lld sets done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld sets done"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld подхода выполнено"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld series hechas"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld séries feitas"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Sätze erledigt"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld séries terminées"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已完成 %lld 组"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lldセット完了"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld сет орындалды"
           }
         }
       }
@@ -1298,6 +1558,12 @@
             "state": "translated",
             "value": "設定"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "баптаулар"
+          }
         }
       }
     },
@@ -1349,6 +1615,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "すべてのデータを削除"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "барлық деректерді жою"
           }
         }
       }
@@ -1402,6 +1674,12 @@
             "state": "translated",
             "value": "キャンセル"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "бас тарту"
+          }
         }
       }
     },
@@ -1453,6 +1731,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "削除"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "жою"
           }
         }
       }
@@ -1506,6 +1790,12 @@
             "state": "translated",
             "value": "すべてのデータを削除しました"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "барлық деректер жойылды"
+          }
         }
       }
     },
@@ -1557,6 +1847,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "この端末上のすべてのトレーニングが削除されます。元に戻すことはできません。"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "бұл әрекет құрылғыдағы барлық жаттығуларды жояды. Оны қайтару мүмкін емес."
           }
         }
       }
@@ -1610,6 +1906,12 @@
             "state": "translated",
             "value": "毎日のリマインダー"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "күнделікті еске салу"
+          }
         }
       }
     },
@@ -1661,6 +1963,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "通知時刻"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "еске салу уақыты"
           }
         }
       }
@@ -1714,6 +2022,12 @@
             "state": "translated",
             "value": "バックアップ"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "сақтық көшірме"
+          }
         }
       }
     },
@@ -1765,6 +2079,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "バックアップを書き出す"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "сақтық көшірмені экспорттау"
           }
         }
       }
@@ -1818,6 +2138,12 @@
             "state": "translated",
             "value": "バックアップを読み込む"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "сақтық көшірмені импорттау"
+          }
         }
       }
     },
@@ -1869,6 +2195,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "データ"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "деректер"
           }
         }
       }
@@ -1922,6 +2254,12 @@
             "state": "translated",
             "value": "情報"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "қолданба туралы"
+          }
         }
       }
     },
@@ -1973,6 +2311,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "ソースコード"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "бастапқы код"
           }
         }
       }
@@ -2026,6 +2370,12 @@
             "state": "translated",
             "value": "利用規約"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "пайдалану шарттары"
+          }
         }
       }
     },
@@ -2077,6 +2427,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "プライバシーポリシー"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "құпиялылық саясаты"
           }
         }
       }
@@ -2130,6 +2486,12 @@
             "state": "translated",
             "value": "バージョン"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "нұсқасы"
+          }
         }
       }
     },
@@ -2181,6 +2543,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "愛情を込めて。広告もトラッキングもありません"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "жүрекпен жасалған, жарнамасыз, қадағалаусыз"
           }
         }
       }
@@ -2234,6 +2602,70 @@
             "state": "translated",
             "value": "私のDownface統計"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "менің Downface статистикам"
+          }
+        }
+      }
+    },
+    "Downface stats": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downface stats"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Статистика Downface"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estadísticas de Downface"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estatísticas do Downface"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downface-Statistik"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statistiques Downface"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downface 统计"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downface統計"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downface статистикасы"
+          }
         }
       }
     },
@@ -2286,6 +2718,12 @@
             "state": "translated",
             "value": "共有"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "бөлісу"
+          }
         }
       }
     },
@@ -2336,7 +2774,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "累計腕立て伏せ"
+            "value": "累计腕立て伏せ"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "барлық тартылу саны"
           }
         }
       }
@@ -2390,6 +2834,12 @@
             "state": "translated",
             "value": "連続記録"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "серия"
+          }
         }
       }
     },
@@ -2441,6 +2891,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "トレーニング回数"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "жаттығу саны"
           }
         }
       }
@@ -2494,6 +2950,12 @@
             "state": "translated",
             "value": "平均1回"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "орт. қайталау"
+          }
         }
       }
     },
@@ -2545,6 +3007,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "平均休憩"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "орт. демалыс"
           }
         }
       }
@@ -2598,6 +3066,12 @@
             "state": "translated",
             "value": "最長連続記録"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ең ұзақ серия"
+          }
         }
       }
     },
@@ -2649,6 +3123,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "総トレーニング数"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "барлық жаттығу саны"
           }
         }
       }
@@ -2702,6 +3182,12 @@
             "state": "translated",
             "value": "統計"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "статистика"
+          }
         }
       }
     },
@@ -2753,6 +3239,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "アクティビティ"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "белсенділік"
           }
         }
       }
@@ -2806,6 +3298,12 @@
             "state": "translated",
             "value": "まだトレーニングがありません"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "әзірге жаттығу жоқ"
+          }
         }
       }
     },
@@ -2857,6 +3355,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "最初のセットを行うとここに統計が表示されます"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "статистиканы көру үшін алғашқы сетті орында"
           }
         }
       }
@@ -2910,6 +3414,12 @@
             "state": "translated",
             "value": "連続記録を続けよう"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "серияңды үзбе"
+          }
         }
       }
     },
@@ -2961,6 +3471,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "その日にまだセットをしていない場合、Downfaceが1日1回やさしくお知らせします。スパムはなく、いつでもオフにできます。"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "егер бүгін әлі жаттығу жасамасаң, Downface күніне бір рет жайлап еске салады. Спам жоқ, кез келген уақытта өшіруге болады."
           }
         }
       }
@@ -3014,6 +3530,12 @@
             "state": "translated",
             "value": "リマインダーを有効にする"
           }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "еске салуларды қосу"
+          }
         }
       }
     },
@@ -3065,6 +3587,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "後で"
+          }
+        },
+        "kk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "қазір емес"
           }
         }
       }

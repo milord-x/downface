@@ -5,9 +5,12 @@ import Combine
 final class NativeUIBridge: ObservableObject {
     static let shared = NativeUIBridge()
 
+    private static let healthSyncKey = "health_sync_enabled"
+
     @Published var snapshot: AppSnapshot = .empty
     @Published var workoutState: WorkoutUIState = .ready(supported: true)
     @Published var supported: Bool = true
+    @Published var healthSyncEnabled: Bool = UserDefaults.standard.bool(forKey: NativeUIBridge.healthSyncKey)
 
     private var channel: FlutterMethodChannel?
 
@@ -44,6 +47,16 @@ final class NativeUIBridge: ObservableObject {
                 let totalReps = args["totalReps"] as? Int ?? 0
                 let sets = args["sets"] as? Int ?? 0
                 workoutState = .finished(totalReps: totalReps, sets: sets)
+
+                if healthSyncEnabled, sets > 0,
+                   let startedAt = args["startedAt"] as? Double,
+                   let endedAt = args["endedAt"] as? Double {
+                    HealthKitService.shared.saveWorkout(
+                        start: Date(timeIntervalSince1970: startedAt / 1000),
+                        end: Date(timeIntervalSince1970: endedAt / 1000),
+                        totalReps: totalReps
+                    )
+                }
             }
             result(nil)
         case "workoutReady":
@@ -70,11 +83,26 @@ final class NativeUIBridge: ObservableObject {
     func requestExport() { send("exportBackup") }
     func requestImport() { send("importBackup") }
     func requestWipe() { send("wipeData") }
-    func setRemindersEnabled(_ enabled: Bool, hour: Int) {
-        send("setReminders", ["enabled": enabled, "hour": hour])
+    func setRemindersEnabled(_ enabled: Bool, hours: [Int]) {
+        send("setReminders", ["enabled": enabled, "hours": hours])
     }
     func declineReminders() { send("declineReminders") }
     func requestShareCard() { send("shareCard") }
+
+    func setHealthSyncEnabled(_ enabled: Bool) {
+        if enabled {
+            Task {
+                let granted = await HealthKitService.shared.requestAuthorization()
+                await MainActor.run {
+                    healthSyncEnabled = granted
+                    UserDefaults.standard.set(granted, forKey: Self.healthSyncKey)
+                }
+            }
+        } else {
+            healthSyncEnabled = false
+            UserDefaults.standard.set(false, forKey: Self.healthSyncKey)
+        }
+    }
 }
 
 enum WorkoutUIState {

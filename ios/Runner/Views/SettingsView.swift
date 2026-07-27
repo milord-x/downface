@@ -5,8 +5,10 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showWipeConfirm = false
     @State private var statusMessage: String?
+    @State private var showAddTime = false
+    @State private var newTimeHour = 19
 
-    private let reminderHours: [Int] = Array(6...23)
+    private let availableHours: [Int] = Array(6...23)
 
     var body: some View {
         NavigationStack {
@@ -14,18 +16,33 @@ struct SettingsView: View {
                 Section {
                     Toggle("Daily reminder", isOn: Binding(
                         get: { bridge.snapshot.remindersEnabled },
-                        set: { bridge.setRemindersEnabled($0, hour: bridge.snapshot.reminderHour) }
+                        set: { bridge.setRemindersEnabled($0, hours: bridge.snapshot.reminderHours) }
                     ))
 
                     if bridge.snapshot.remindersEnabled {
-                        Picker("Remind me at", selection: Binding(
-                            get: { bridge.snapshot.reminderHour },
-                            set: { bridge.setRemindersEnabled(true, hour: $0) }
-                        )) {
-                            ForEach(reminderHours, id: \.self) { hour in
-                                Text(formattedHour(hour)).tag(hour)
+                        ForEach(bridge.snapshot.reminderHours.sorted(), id: \.self) { hour in
+                            HStack {
+                                Text(formattedHour(hour))
+                                    .foregroundStyle(DFColor.textPrimary)
+                                Spacer()
+                                if bridge.snapshot.reminderHours.count > 1 {
+                                    Button {
+                                        let remaining = bridge.snapshot.reminderHours.filter { $0 != hour }
+                                        bridge.setRemindersEnabled(true, hours: remaining)
+                                    } label: {
+                                        Image(systemName: "minus.circle.fill")
+                                            .foregroundStyle(.red)
+                                    }
+                                }
                             }
                         }
+
+                        Button {
+                            showAddTime = true
+                        } label: {
+                            Label("Add another time", systemImage: "plus.circle.fill")
+                        }
+                        .foregroundStyle(DFColor.textPrimary)
                     }
                 }
                 .listRowBackground(Color.white.opacity(0.06))
@@ -43,6 +60,17 @@ struct SettingsView: View {
                 }
                 .listRowBackground(Color.white.opacity(0.06))
 
+                Section("health") {
+                    Toggle("Sync with Apple Health", isOn: Binding(
+                        get: { bridge.healthSyncEnabled },
+                        set: { bridge.setHealthSyncEnabled($0) }
+                    ))
+                    Text("Writes each finished set to Health as a workout, so it shows up alongside your other activity.")
+                        .font(DFType.caption)
+                        .foregroundStyle(DFColor.textSecondary)
+                }
+                .listRowBackground(Color.white.opacity(0.06))
+
                 Section("data") {
                     Button("Delete all data", role: .destructive) {
                         showWipeConfirm = true
@@ -57,6 +85,26 @@ struct SettingsView: View {
                                 .foregroundStyle(DFColor.textPrimary)
                             Spacer()
                             Image(systemName: "arrow.up.right")
+                                .foregroundStyle(DFColor.textSecondary)
+                        }
+                    }
+
+                    Link(destination: URL(string: "https://github.com/milord-x/downface/discussions")!) {
+                        HStack {
+                            Text("FAQ & discussions")
+                                .foregroundStyle(DFColor.textPrimary)
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .foregroundStyle(DFColor.textSecondary)
+                        }
+                    }
+
+                    Link(destination: URL(string: "https://github.com/sponsors/milord-x")!) {
+                        HStack {
+                            Text("Support this project")
+                                .foregroundStyle(DFColor.textPrimary)
+                            Spacer()
+                            Image(systemName: "heart.fill")
                                 .foregroundStyle(DFColor.textSecondary)
                         }
                     }
@@ -109,6 +157,32 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("This removes every workout on this device. This cannot be undone.")
+            }
+            .sheet(isPresented: $showAddTime) {
+                NavigationStack {
+                    Picker("Time", selection: $newTimeHour) {
+                        ForEach(availableHours, id: \.self) { hour in
+                            Text(formattedHour(hour)).tag(hour)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .navigationTitle("add reminder")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") { showAddTime = false }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Add") {
+                                var hours = Set(bridge.snapshot.reminderHours)
+                                hours.insert(newTimeHour)
+                                bridge.setRemindersEnabled(true, hours: Array(hours))
+                                showAddTime = false
+                            }
+                        }
+                    }
+                }
+                .presentationDetents([.height(280)])
             }
         }
     }

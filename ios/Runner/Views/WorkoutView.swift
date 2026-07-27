@@ -192,6 +192,11 @@ private struct RestingStateView: View {
     let onNext: () -> Void
     let onFinish: () -> Void
 
+    private var setsDoneText: String {
+        let key = setsSoFar == 1 ? "%lld set done" : "%lld sets done"
+        return String(format: NSLocalizedString(key, comment: ""), setsSoFar)
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             Spacer()
@@ -201,7 +206,7 @@ private struct RestingStateView: View {
                 .foregroundStyle(DFColor.textPrimary)
                 .contentTransition(.numericText())
 
-            Text("rest · \(setsSoFar) set\(setsSoFar == 1 ? "" : "s") done")
+            Text("\(NSLocalizedString("rest", comment: "")) · \(setsDoneText)")
                 .font(DFType.caption)
                 .foregroundStyle(DFColor.textSecondary)
 

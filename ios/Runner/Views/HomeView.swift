@@ -6,6 +6,7 @@ struct HomeView: View {
     @State private var showStats = false
     @State private var showWorkout = false
     @State private var showReminderOnboarding = false
+    @State private var appeared = false
     @Namespace private var namespace
 
     private var snapshot: AppSnapshot { bridge.snapshot }
@@ -32,17 +33,25 @@ struct HomeView: View {
                 header
 
                 TodayCard(reps: snapshot.repsToday)
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 8)
 
                 PeriodStatsRow(
                     week: snapshot.repsThisWeek,
                     month: snapshot.repsThisMonth,
                     allTime: snapshot.repsAllTime
                 )
+                .opacity(appeared ? 1 : 0)
+                .offset(y: appeared ? 0 : 8)
+                .animation(.smooth.delay(0.05), value: appeared)
 
                 WeekStreakCard(
                     streak: snapshot.streak.current,
                     completedWeekdays: weekdayCompleted
                 )
+                .opacity(appeared ? 1 : 0)
+                .offset(y: appeared ? 0 : 8)
+                .animation(.smooth.delay(0.1), value: appeared)
 
                 Spacer()
 
@@ -51,6 +60,9 @@ struct HomeView: View {
             .padding(.horizontal, DFSpacing.screenPadding)
             .padding(.top, 8)
             .padding(.bottom, 16)
+        }
+        .onAppear {
+            withAnimation(.smooth) { appeared = true }
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(isPresented: $showStats) { StatsView() }
@@ -128,6 +140,8 @@ private struct TodayCard: View {
                     Text("\(reps)")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(.black)
+                        .contentTransition(.numericText())
+                        .animation(.smooth, value: reps)
                 }
                 .frame(width: 56, height: 56)
 
@@ -166,6 +180,8 @@ private struct StatPill: View {
             Text("\(value)")
                 .font(.system(size: 20, weight: .bold, design: .rounded))
                 .foregroundStyle(DFColor.textPrimary)
+                .contentTransition(.numericText())
+                .animation(.smooth, value: value)
             Text(label)
                 .font(DFType.caption)
                 .foregroundStyle(DFColor.textSecondary)

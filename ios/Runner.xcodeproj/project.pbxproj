@@ -26,6 +26,7 @@
 		9F41BCF5919F420C99B4E7A4 /* WorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B93499652CD4A7CB74A54E5 /* WorkoutView.swift */; };
 		9C1A00000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9C1A00000000000000000002 /* Localizable.xcstrings */; };
 		9C1A00000000000000000003 /* ReminderOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A00000000000000000004 /* ReminderOnboardingView.swift */; };
+		9C1A00000000000000000006 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A00000000000000000007 /* HealthKitService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +80,8 @@
 		0B93499652CD4A7CB74A54E5 /* WorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutView.swift; sourceTree = "<group>"; };
 		9C1A00000000000000000002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Resources/Localizable.xcstrings; sourceTree = "<group>"; };
 		9C1A00000000000000000004 /* ReminderOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderOnboardingView.swift; sourceTree = "<group>"; };
+		9C1A00000000000000000005 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		9C1A00000000000000000007 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,6 +145,8 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				1A2B3C4D0E1F2A3B4C5D6E71 /* FaceTracker.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				9C1A00000000000000000005 /* Runner.entitlements */,
+				9C1A00000000000000000007 /* HealthKitService.swift */,
 				9C1A00000000000000000002 /* Localizable.xcstrings */,
 				EB3D5848FE1047F2812C3BBF /* AppSnapshot.swift */,
 				484AA3F01AA94FDDA33C68BA /* DesignSystem.swift */,
@@ -332,6 +337,7 @@
 				EE0F6AAA693E4EF395313037 /* StatsView.swift in Sources */,
 				9F41BCF5919F420C99B4E7A4 /* WorkoutView.swift in Sources */,
 				9C1A00000000000000000003 /* ReminderOnboardingView.swift in Sources */,
+				9C1A00000000000000000006 /* HealthKitService.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -431,6 +437,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				DEVELOPMENT_TEAM = 29SF5RCFKW;
 				PRODUCT_BUNDLE_IDENTIFIER = com.downface.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -611,6 +618,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				DEVELOPMENT_TEAM = 29SF5RCFKW;
 				PRODUCT_BUNDLE_IDENTIFIER = com.downface.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -634,6 +642,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				DEVELOPMENT_TEAM = 29SF5RCFKW;
 				PRODUCT_BUNDLE_IDENTIFIER = com.downface.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";

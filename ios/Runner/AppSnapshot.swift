@@ -32,7 +32,7 @@ struct AppSnapshot: Codable {
     let repsAllTime: Int
     let activeDayTimestamps: [Double]
     let remindersEnabled: Bool
-    let reminderHour: Int
+    let reminderHours: [Int]
     let remindersAsked: Bool
 
     static let empty = AppSnapshot(
@@ -44,7 +44,7 @@ struct AppSnapshot: Codable {
         repsAllTime: 0,
         activeDayTimestamps: [],
         remindersEnabled: false,
-        reminderHour: 19,
+        reminderHours: [19],
         remindersAsked: true
     )
 
