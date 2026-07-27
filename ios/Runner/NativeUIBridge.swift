@@ -1,6 +1,7 @@
 import Flutter
 import SwiftUI
 import Combine
+import WidgetKit
 
 final class NativeUIBridge: ObservableObject {
     static let shared = NativeUIBridge()
@@ -27,6 +28,7 @@ final class NativeUIBridge: ObservableObject {
         case "updateSnapshot":
             if let json = call.arguments as? String {
                 snapshot = AppSnapshot.decode(from: json)
+                updateWidgetData()
             }
             result(nil)
         case "workoutTracking":
@@ -88,6 +90,17 @@ final class NativeUIBridge: ObservableObject {
     }
     func declineReminders() { send("declineReminders") }
     func requestShareCard() { send("shareCard") }
+
+    private func updateWidgetData() {
+        var repsPerDay: [String: Int] = [:]
+        for workout in snapshot.workouts {
+            let date = Date(timeIntervalSince1970: workout.startedAt / 1000)
+            let key = ActivitySnapshot.dayFormatter.string(from: date)
+            repsPerDay[key, default: 0] += workout.totalReps
+        }
+        ActivitySnapshot.save(ActivitySnapshot(repsPerDay: repsPerDay, currentStreak: snapshot.streak.current))
+        WidgetCenter.shared.reloadAllTimelines()
+    }
 
     func setHealthSyncEnabled(_ enabled: Bool) {
         if enabled {

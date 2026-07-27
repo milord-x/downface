@@ -4,7 +4,7 @@ struct SettingsView: View {
     @ObservedObject var bridge = NativeUIBridge.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showWipeConfirm = false
-    @State private var statusMessage: String?
+    @State private var statusMessage: LocalizedStringKey?
     @State private var showAddTime = false
     @State private var newTimeHour = 19
 
@@ -219,7 +219,7 @@ struct SettingsView: View {
 }
 
 private struct LegalTextView: View {
-    let title: String
+    let title: LocalizedStringKey
     let text: String
 
     var body: some View {

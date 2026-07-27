@@ -172,7 +172,7 @@ private struct PeriodStatsRow: View {
 }
 
 private struct StatPill: View {
-    let label: String
+    let label: LocalizedStringKey
     let value: Int
 
     var body: some View {
@@ -196,7 +196,7 @@ private struct WeekStreakCard: View {
     let streak: Int
     let completedWeekdays: Set<Int>
 
-    private let labels = ["M", "T", "W", "T", "F", "S", "S"]
+    private let labels: [LocalizedStringKey] = ["M", "T", "W", "T", "F", "S", "S"]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -225,9 +225,11 @@ private struct WeekStreakCard: View {
                                 Image(systemName: "checkmark")
                                     .font(.system(size: 13, weight: .bold))
                                     .foregroundStyle(.black)
+                                    .transition(.scale.combined(with: .opacity))
                             }
                         }
                         .frame(width: 34, height: 34)
+                        .animation(.bouncy, value: done)
 
                         Text(labels[index])
                             .font(.system(size: 12, weight: .medium))

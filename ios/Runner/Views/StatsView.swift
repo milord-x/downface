@@ -103,7 +103,7 @@ private struct EmptyStatsView: View {
 }
 
 private struct MetricCard: View {
-    let label: String
+    let label: LocalizedStringKey
     let value: String
 
     var body: some View {
