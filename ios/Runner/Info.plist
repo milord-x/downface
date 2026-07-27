@@ -51,6 +51,8 @@
 	<string>Downface needs access to save your workout stats image to your photo library.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Downface can add your push-up workouts to Apple Health so they show up alongside your other activity.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Downface does not read any data from Apple Health, only writes your push-up workouts to it.</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>
