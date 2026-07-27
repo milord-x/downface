@@ -13,7 +13,7 @@ workflows:
       cocoapods: default
       ios_signing:
         provisioning_profiles:
-          - downface_profile
+          - com.downface.app
         certificates:
           - downface_profile
 

@@ -47,6 +47,10 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Downface uses the TrueDepth camera to track your head movement and count push-ups automatically.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Downface needs access to your photo library to save and share your workout stats.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Downface needs access to save your workout stats image to your photo library.</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>
