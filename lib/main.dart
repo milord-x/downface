@@ -27,7 +27,7 @@ class _FlexAppState extends State<FlexApp> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      title: 'Flex',
+      title: 'Downface',
       debugShowCheckedModeBanner: false,
       theme: appCupertinoTheme,
       home: HomeScreen(appState: _appState),

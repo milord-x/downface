@@ -12,11 +12,11 @@ workflows:
       cocoapods: default
       ios_signing:
         provisioning_profiles:
-          - flex_profile
+          - downface_profile
         certificates:
-          - flex_distribution
+          - downface_distribution
       vars:
-        BUNDLE_ID: com.flexapp.flex
+        BUNDLE_ID: com.downface.app
 
     scripts:
       - name: Install dependencies
