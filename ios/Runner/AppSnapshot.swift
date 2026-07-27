@@ -31,8 +31,9 @@ struct AppSnapshot: Codable {
     let repsThisMonth: Int
     let repsAllTime: Int
     let activeDayTimestamps: [Double]
+    let repsPerDay: [String: Int]
     let remindersEnabled: Bool
-    let reminderHours: [Int]
+    let reminderMinutes: [Int]
     let remindersAsked: Bool
 
     static let empty = AppSnapshot(
@@ -43,10 +44,18 @@ struct AppSnapshot: Codable {
         repsThisMonth: 0,
         repsAllTime: 0,
         activeDayTimestamps: [],
+        repsPerDay: [:],
         remindersEnabled: false,
-        reminderHours: [19],
+        reminderMinutes: [19 * 60],
         remindersAsked: true
     )
+
+    /// repsPerDay keys are midnight-local millisecond timestamps (as strings) for each active day.
+    func reps(on date: Date) -> Int {
+        let midnight = Calendar.current.startOfDay(for: date)
+        let key = String(Int(midnight.timeIntervalSince1970 * 1000))
+        return repsPerDay[key] ?? 0
+    }
 
     static func decode(from json: String) -> AppSnapshot {
         guard let data = json.data(using: .utf8),

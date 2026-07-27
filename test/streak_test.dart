@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flex/core/models/streak.dart';
+import 'package:downface/core/models/streak.dart';
 
 void main() {
   test('current streak counts consecutive days ending today', () {

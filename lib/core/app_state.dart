@@ -13,7 +13,7 @@ class AppState extends ChangeNotifier {
   List<Workout> workouts = [];
   bool loaded = false;
   bool remindersEnabled = false;
-  List<int> reminderHours = [19];
+  List<int> reminderMinutes = [19 * 60];
   bool remindersAsked = false;
 
   bool get _didWorkoutToday => activeDays.contains(DateTime(
@@ -27,17 +27,17 @@ class AppState extends ChangeNotifier {
   Future<void> load() async {
     workouts = await AppDatabase.instance.allWorkouts();
     remindersEnabled = await _reminders.isEnabled();
-    reminderHours = await _reminders.hours();
+    reminderMinutes = await _reminders.minutesOfDay();
     remindersAsked = await _reminders.hasBeenAsked();
     await _reminders.rescheduleIfEnabled(doneToday: _didWorkoutToday, streakAtRisk: _streakAtRisk);
     loaded = true;
     notifyListeners();
   }
 
-  Future<void> setReminders(bool enabled, List<int> hours) async {
-    await _reminders.setEnabled(enabled, hours: hours);
+  Future<void> setReminders(bool enabled, List<int> minutesOfDay) async {
+    await _reminders.setEnabled(enabled, minutesOfDay: minutesOfDay);
     remindersEnabled = enabled;
-    reminderHours = hours;
+    reminderMinutes = minutesOfDay;
     remindersAsked = true;
     notifyListeners();
   }
@@ -61,6 +61,14 @@ class AppState extends ChangeNotifier {
   StreakInfo get streak => computeStreak(workouts.map((w) => w.day).toList(), DateTime.now());
 
   Set<DateTime> get activeDays => workouts.map((w) => w.day).toSet();
+
+  Map<DateTime, int> get repsPerDay {
+    final totals = <DateTime, int>{};
+    for (final w in workouts) {
+      totals[w.day] = (totals[w.day] ?? 0) + w.totalReps;
+    }
+    return totals;
+  }
 
   int repsOnDay(DateTime day) {
     final d = DateTime(day.year, day.month, day.day);
@@ -110,8 +118,11 @@ class AppState extends ChangeNotifier {
       'repsAllTime': repsAllTime,
       'activeDayTimestamps':
           activeDays.map((d) => d.millisecondsSinceEpoch.toDouble()).toList(),
+      'repsPerDay': repsPerDay.map(
+        (day, reps) => MapEntry(day.millisecondsSinceEpoch.toString(), reps),
+      ),
       'remindersEnabled': remindersEnabled,
-      'reminderHours': reminderHours,
+      'reminderMinutes': reminderMinutes,
       'remindersAsked': remindersAsked,
     });
   }

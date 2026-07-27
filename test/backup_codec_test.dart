@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flex/core/export/backup_codec.dart';
-import 'package:flex/core/models/workout.dart';
-import 'package:flex/core/models/workout_set.dart';
+import 'package:downface/core/export/backup_codec.dart';
+import 'package:downface/core/models/workout.dart';
+import 'package:downface/core/models/workout_set.dart';
 
 void main() {
   final sample = [

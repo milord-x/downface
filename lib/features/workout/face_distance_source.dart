@@ -7,8 +7,8 @@ class FaceSample {
 }
 
 class FaceDistanceSource {
-  static const _methods = MethodChannel('flex/face_tracking');
-  static const _events = EventChannel('flex/face_distance');
+  static const _methods = MethodChannel('downface/face_tracking');
+  static const _events = EventChannel('downface/face_distance');
 
   Future<bool> isSupported() async {
     final supported = await _methods.invokeMethod<bool>('isSupported');

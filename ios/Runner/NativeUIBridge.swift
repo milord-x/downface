@@ -2,6 +2,7 @@ import Flutter
 import SwiftUI
 import Combine
 import WidgetKit
+import UIKit
 
 final class NativeUIBridge: ObservableObject {
     static let shared = NativeUIBridge()
@@ -16,7 +17,7 @@ final class NativeUIBridge: ObservableObject {
     private var channel: FlutterMethodChannel?
 
     func attach(messenger: FlutterBinaryMessenger) {
-        let channel = FlutterMethodChannel(name: "flex/native_ui", binaryMessenger: messenger)
+        let channel = FlutterMethodChannel(name: "downface/native_ui", binaryMessenger: messenger)
         channel.setMethodCallHandler { [weak self] call, result in
             self?.handle(call: call, result: result)
         }
@@ -66,6 +67,11 @@ final class NativeUIBridge: ObservableObject {
             supported = isSupported
             workoutState = .ready(supported: isSupported)
             result(nil)
+        case "shareFile":
+            if let args = call.arguments as? [String: Any], let path = args["path"] as? String {
+                presentShareSheet(forFileAt: path)
+            }
+            result(nil)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -85,18 +91,45 @@ final class NativeUIBridge: ObservableObject {
     func requestExport() { send("exportBackup") }
     func requestImport() { send("importBackup") }
     func requestWipe() { send("wipeData") }
-    func setRemindersEnabled(_ enabled: Bool, hours: [Int]) {
-        send("setReminders", ["enabled": enabled, "hours": hours])
+    func setRemindersEnabled(_ enabled: Bool, minutes: [Int]) {
+        send("setReminders", ["enabled": enabled, "minutes": minutes])
     }
     func declineReminders() { send("declineReminders") }
     func requestShareCard() { send("shareCard") }
 
+    private func presentShareSheet(forFileAt path: String) {
+        let url = URL(fileURLWithPath: path)
+        DispatchQueue.main.async {
+            guard let root = Self.topViewController() else { return }
+            let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+            if let popover = activityVC.popoverPresentationController {
+                popover.sourceView = root.view
+                popover.sourceRect = CGRect(x: root.view.bounds.midX, y: root.view.bounds.midY, width: 0, height: 0)
+                popover.permittedArrowDirections = []
+            }
+            root.present(activityVC, animated: true)
+        }
+    }
+
+    private static func topViewController() -> UIViewController? {
+        guard let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+              let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+            return nil
+        }
+        var top = root
+        while let presented = top.presentedViewController {
+            top = presented
+        }
+        return top
+    }
+
     private func updateWidgetData() {
         var repsPerDay: [String: Int] = [:]
-        for workout in snapshot.workouts {
-            let date = Date(timeIntervalSince1970: workout.startedAt / 1000)
+        for (midnightMsKey, reps) in snapshot.repsPerDay {
+            guard let midnightMs = Double(midnightMsKey) else { continue }
+            let date = Date(timeIntervalSince1970: midnightMs / 1000)
             let key = ActivitySnapshot.dayFormatter.string(from: date)
-            repsPerDay[key, default: 0] += workout.totalReps
+            repsPerDay[key, default: 0] += reps
         }
         ActivitySnapshot.save(ActivitySnapshot(repsPerDay: repsPerDay, currentStreak: snapshot.streak.current))
         WidgetCenter.shared.reloadAllTimelines()

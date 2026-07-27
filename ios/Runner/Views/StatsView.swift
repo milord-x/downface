@@ -20,17 +20,6 @@ struct StatsView: View {
         return Double(rests.reduce(0, +)) / Double(rests.count)
     }
 
-    private var repsPerDay: [DateComponents: Int] {
-        let calendar = Calendar.current
-        var totals: [DateComponents: Int] = [:]
-        for workout in snapshot.workouts {
-            let date = Date(timeIntervalSince1970: workout.startedAt / 1000)
-            let comps = calendar.dateComponents([.year, .month, .day], from: date)
-            totals[comps, default: 0] += workout.totalReps
-        }
-        return totals
-    }
-
     var body: some View {
         NavigationStack {
             Group {
@@ -77,7 +66,7 @@ struct StatsView: View {
             Text("activity")
                 .font(DFType.title)
                 .foregroundStyle(DFColor.textPrimary)
-            ActivityGrid(repsPerDay: repsPerDay)
+            ActivityGrid(snapshot: snapshot)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
@@ -122,17 +111,20 @@ private struct MetricCard: View {
 }
 
 private struct ActivityGrid: View {
-    let repsPerDay: [DateComponents: Int]
+    let snapshot: AppSnapshot
     private let weeks = 20
 
+    @State private var selectedDate: Date?
+    @State private var selectedReps = 0
+
     private var maxReps: Int {
-        repsPerDay.values.max() ?? 1
+        max(snapshot.workouts.map { $0.totalReps }.max() ?? 1, 1)
     }
 
     private func intensity(for reps: Int) -> Color {
         guard reps > 0 else { return Color.white.opacity(0.08) }
-        let ratio = Double(reps) / Double(max(maxReps, 1))
-        return DFColor.textPrimary.opacity(0.25 + ratio * 0.75)
+        let ratio = Double(reps) / Double(maxReps)
+        return DFColor.textPrimary.opacity(0.35 + ratio * 0.65)
     }
 
     var body: some View {
@@ -143,29 +135,67 @@ private struct ActivityGrid: View {
         let daysToMonday = (weekdayOfStart + 5) % 7
         let firstMonday = calendar.date(byAdding: .day, value: -daysToMonday, to: start) ?? start
 
-        return ScrollView(.horizontal, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 6) {
-                monthLabels(calendar: calendar, firstMonday: firstMonday)
+        return VStack(alignment: .leading, spacing: 10) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 6) {
+                    monthLabels(calendar: calendar, firstMonday: firstMonday)
 
-                HStack(alignment: .top, spacing: 4) {
-                    ForEach(0..<weeks, id: \.self) { week in
-                        VStack(spacing: 4) {
-                            ForEach(0..<7, id: \.self) { day in
-                                let date = calendar.date(byAdding: .day, value: week * 7 + day, to: firstMonday) ?? firstMonday
-                                let comps = calendar.dateComponents([.year, .month, .day], from: date)
-                                let isFuture = date > today
-                                let reps = repsPerDay[comps] ?? 0
+                    HStack(alignment: .top, spacing: 4) {
+                        ForEach(0..<weeks, id: \.self) { week in
+                            VStack(spacing: 4) {
+                                ForEach(0..<7, id: \.self) { day in
+                                    let date = calendar.date(byAdding: .day, value: week * 7 + day, to: firstMonday) ?? firstMonday
+                                    let isFuture = date > today
+                                    let reps = snapshot.reps(on: date)
 
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(isFuture ? Color.clear : intensity(for: reps))
-                                    .frame(width: 14, height: 14)
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(isFuture ? Color.clear : intensity(for: reps))
+                                        .frame(width: 14, height: 14)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 4)
+                                                .stroke(DFColor.textPrimary.opacity(selectedDate == date ? 0.9 : 0), lineWidth: 1.5)
+                                        )
+                                        .onTapGesture {
+                                            guard !isFuture else { return }
+                                            selectedDate = date
+                                            selectedReps = reps
+                                        }
+                                }
                             }
                         }
                     }
                 }
             }
+            .defaultScrollAnchor(.trailing)
+
+            if let selectedDate {
+                dayDetail(date: selectedDate, reps: selectedReps)
+            }
         }
-        .defaultScrollAnchor(.trailing)
+    }
+
+    private func repsText(_ reps: Int) -> String {
+        let key = reps == 1 ? "%lld rep" : "%lld reps"
+        return String(format: NSLocalizedString(key, comment: ""), reps)
+    }
+
+    private func dayDetail(date: Date, reps: Int) -> some View {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMM d"
+        return HStack {
+            Text(formatter.string(from: date))
+                .font(DFType.caption)
+                .foregroundStyle(DFColor.textSecondary)
+            Spacer()
+            Text(reps > 0 ? repsText(reps) : "no workout")
+                .font(DFType.caption.weight(.semibold))
+                .foregroundStyle(reps > 0 ? DFColor.textPrimary : DFColor.textTertiary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .transition(.opacity.combined(with: .move(edge: .top)))
+        .animation(.smooth, value: date)
     }
 
     private func monthLabels(calendar: Calendar, firstMonday: Date) -> some View {

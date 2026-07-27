@@ -9,13 +9,13 @@ final class FaceTracker: NSObject, ARSessionDelegate, FlutterStreamHandler {
 
   func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterEventChannel(
-      name: "flex/face_distance",
+      name: "downface/face_distance",
       binaryMessenger: registrar.messenger()
     )
     channel.setStreamHandler(self)
 
     let methodChannel = FlutterMethodChannel(
-      name: "flex/face_tracking",
+      name: "downface/face_tracking",
       binaryMessenger: registrar.messenger()
     )
     methodChannel.setMethodCallHandler { [weak self] call, result in

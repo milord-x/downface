@@ -8,7 +8,8 @@ import 'package:timezone/timezone.dart' as tz;
 
 class RemindersService {
   static const _prefKey = 'reminders_enabled';
-  static const _hoursKey = 'reminders_hours';
+  static const _minutesKey = 'reminders_minutes';
+  static const _legacyHoursKey = 'reminders_hours';
   static const _askedKey = 'reminders_asked';
   static const _baseNotificationId = 42;
 
@@ -53,11 +54,24 @@ class RemindersService {
     return prefs.getBool(_prefKey) ?? false;
   }
 
-  Future<List<int>> hours() async {
+  /// Each value is minutes since midnight (0-1439), in 5-minute steps.
+  Future<List<int>> minutesOfDay() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_hoursKey);
-    if (raw == null) return [19];
-    return (jsonDecode(raw) as List<dynamic>).cast<int>();
+    final raw = prefs.getString(_minutesKey);
+    if (raw != null) {
+      return (jsonDecode(raw) as List<dynamic>).cast<int>();
+    }
+
+    final legacyRaw = prefs.getString(_legacyHoursKey);
+    if (legacyRaw != null) {
+      final hours = (jsonDecode(legacyRaw) as List<dynamic>).cast<int>();
+      final minutes = hours.map((h) => h * 60).toList();
+      await prefs.setString(_minutesKey, jsonEncode(minutes));
+      await prefs.remove(_legacyHoursKey);
+      return minutes;
+    }
+
+    return [19 * 60];
   }
 
   Future<bool> hasBeenAsked() async {
@@ -70,12 +84,12 @@ class RemindersService {
     await prefs.setBool(_askedKey, true);
   }
 
-  Future<void> setEnabled(bool enabled, {List<int>? hours}) async {
+  Future<void> setEnabled(bool enabled, {List<int>? minutesOfDay}) async {
     await _ensureInit();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefKey, enabled);
-    if (hours != null) {
-      await prefs.setString(_hoursKey, jsonEncode(hours));
+    if (minutesOfDay != null) {
+      await prefs.setString(_minutesKey, jsonEncode(minutesOfDay));
     }
     await prefs.setBool(_askedKey, true);
 
@@ -89,7 +103,7 @@ class RemindersService {
         ?.requestPermissions(alert: true, badge: true, sound: true);
     if (granted == false) return;
 
-    await _scheduleAll(hours: hours ?? await this.hours(), streakAtRisk: false);
+    await _scheduleAll(minutesOfDay: minutesOfDay ?? await this.minutesOfDay(), streakAtRisk: false);
   }
 
   Future<void> _cancelAll() async {
@@ -98,13 +112,15 @@ class RemindersService {
     }
   }
 
-  Future<void> _scheduleAll({required List<int> hours, required bool streakAtRisk}) async {
+  Future<void> _scheduleAll({required List<int> minutesOfDay, required bool streakAtRisk}) async {
     await _cancelAll();
     final now = tz.TZDateTime.now(tz.local);
     final pool = streakAtRisk ? _urgentMessages : _messages;
 
-    for (var i = 0; i < hours.length; i++) {
-      var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hours[i]);
+    for (var i = 0; i < minutesOfDay.length; i++) {
+      final hour = minutesOfDay[i] ~/ 60;
+      final minute = minutesOfDay[i] % 60;
+      var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
       if (scheduled.isBefore(now)) {
         scheduled = scheduled.add(const Duration(days: 1));
       }
@@ -127,12 +143,14 @@ class RemindersService {
   Future<void> rescheduleIfEnabled({required bool doneToday, required bool streakAtRisk}) async {
     if (!await isEnabled()) return;
     await _ensureInit();
-    final configuredHours = await hours();
+    final configured = await minutesOfDay();
     if (doneToday) {
       await _cancelAll();
       final now = tz.TZDateTime.now(tz.local);
-      for (var i = 0; i < configuredHours.length; i++) {
-        final scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, configuredHours[i])
+      for (var i = 0; i < configured.length; i++) {
+        final hour = configured[i] ~/ 60;
+        final minute = configured[i] % 60;
+        final scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute)
             .add(const Duration(days: 1));
         final (title, body) = _messages[Random().nextInt(_messages.length)];
         await _plugin.zonedSchedule(
@@ -146,6 +164,6 @@ class RemindersService {
       }
       return;
     }
-    await _scheduleAll(hours: configuredHours, streakAtRisk: streakAtRisk);
+    await _scheduleAll(minutesOfDay: configured, streakAtRisk: streakAtRisk);
   }
 }

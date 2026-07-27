@@ -5,18 +5,21 @@ final class HealthKitService {
 
     private let store = HKHealthStore()
     private let workoutType = HKObjectType.workoutType()
+    private let energyType = HKQuantityType(.activeEnergyBurned)
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
     func requestAuthorization() async -> Bool {
         guard isAvailable else { return false }
         do {
-            try await store.requestAuthorization(toShare: [workoutType], read: [])
+            try await store.requestAuthorization(toShare: [workoutType, energyType], read: [])
             return true
         } catch {
             return false
         }
     }
+
+    private static let kcalPerRep = 0.4
 
     func saveWorkout(start: Date, end: Date, totalReps: Int) {
         guard isAvailable else { return }
@@ -25,8 +28,12 @@ final class HealthKitService {
 
         let builder = HKWorkoutBuilder(healthStore: store, configuration: configuration, device: .local())
         builder.beginCollection(withStart: start) { _, _ in
-            builder.endCollection(withEnd: end) { _, _ in
-                builder.finishWorkout { _, _ in }
+            let energy = HKQuantity(unit: .kilocalorie(), doubleValue: Double(totalReps) * Self.kcalPerRep)
+            let sample = HKCumulativeQuantitySample(type: self.energyType, quantity: energy, start: start, end: end)
+            builder.add([sample]) { _, _ in
+                builder.endCollection(withEnd: end) { _, _ in
+                    builder.finishWorkout { _, _ in }
+                }
             }
         }
     }

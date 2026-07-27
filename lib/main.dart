@@ -18,7 +18,7 @@ void main() {
 }
 
 class NativeBridge {
-  static const _channel = MethodChannel('flex/native_ui');
+  static const _channel = MethodChannel('downface/native_ui');
 
   final _appState = AppState();
   final _backup = BackupService();
@@ -54,7 +54,8 @@ class NativeBridge {
       case 'cancelWorkout':
         await _cancelWorkout();
       case 'exportBackup':
-        await _backup.shareBackup();
+        final file = await _backup.exportToFile();
+        _channel.invokeMethod('shareFile', {'path': file.path});
       case 'importBackup':
         await _importBackup();
       case 'wipeData':
@@ -62,8 +63,8 @@ class NativeBridge {
         _pushSnapshot();
       case 'setReminders':
         final args = call.arguments as Map<dynamic, dynamic>;
-        final hours = (args['hours'] as List<dynamic>).cast<int>();
-        await _appState.setReminders(args['enabled'] as bool, hours);
+        final minutes = (args['minutes'] as List<dynamic>).cast<int>();
+        await _appState.setReminders(args['enabled'] as bool, minutes);
         _pushSnapshot();
       case 'declineReminders':
         await _appState.declineReminders();

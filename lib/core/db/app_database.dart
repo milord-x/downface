@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -15,7 +17,8 @@ class AppDatabase {
 
   Future<Database> _open() async {
     final dir = await getApplicationDocumentsDirectory();
-    final path = join(dir.path, 'flex.db');
+    final path = join(dir.path, 'downface.db');
+    await _migrateLegacyDatabase(dir.path, path);
     return openDatabase(
       path,
       version: 1,
@@ -43,6 +46,17 @@ class AppDatabase {
         await db.execute('CREATE INDEX idx_workouts_startedAt ON workouts(startedAt)');
       },
     );
+  }
+
+  /// Renames the pre-rename `flex.db` file to `downface.db` so existing
+  /// workout history survives the app's flex → downface rename.
+  Future<void> _migrateLegacyDatabase(String dirPath, String newPath) async {
+    if (await File(newPath).exists()) return;
+    final legacyPath = join(dirPath, 'flex.db');
+    final legacyFile = File(legacyPath);
+    if (await legacyFile.exists()) {
+      await legacyFile.rename(newPath);
+    }
   }
 
   Future<int> insertWorkout(Workout workout) async {

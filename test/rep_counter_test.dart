@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flex/features/workout/rep_counter.dart';
+import 'package:downface/features/workout/rep_counter.dart';
 
 void main() {
   test('counts one full down-up cycle as a rep', () {
