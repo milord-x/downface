@@ -3,7 +3,7 @@ import SwiftUI
 struct ShareCardView: View {
     @ObservedObject var bridge = NativeUIBridge.shared
     @Environment(\.dismiss) private var dismiss
-    @State private var renderedImage: UIImage?
+    @State private var cardFileURL: URL?
 
     private var snapshot: AppSnapshot { bridge.snapshot }
 
@@ -20,10 +20,14 @@ struct ShareCardView: View {
 
                 Spacer()
 
-                if let image = renderedImage {
+                if let cardFileURL {
                     ShareLink(
-                        item: Image(uiImage: image),
-                        preview: SharePreview("Downface stats", image: Image(uiImage: image))
+                        items: [cardFileURL],
+                        subject: Text("My Downface stats"),
+                        message: Text("\(snapshot.repsAllTime) push-ups tracked with Downface \u{2014} the offline push-up counter that watches your face, not a sensor."),
+                        preview: { url in
+                            SharePreview("Downface stats", image: Image(uiImage: UIImage(contentsOfFile: url.path) ?? UIImage()))
+                        }
                     ) {
                         Text("share")
                             .font(DFType.body.weight(.bold))
@@ -52,7 +56,11 @@ struct ShareCardView: View {
                 .frame(width: 400, height: 400)
         )
         renderer.scale = 3
-        renderedImage = renderer.uiImage
+        guard let uiImage = renderer.uiImage, let pngData = uiImage.pngData() else { return }
+
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("downface_stats.png")
+        try? pngData.write(to: url)
+        cardFileURL = url
     }
 }
 

@@ -33,6 +33,7 @@ struct AppSnapshot: Codable {
     let activeDayTimestamps: [Double]
     let remindersEnabled: Bool
     let reminderHour: Int
+    let remindersAsked: Bool
 
     static let empty = AppSnapshot(
         workouts: [],
@@ -43,7 +44,8 @@ struct AppSnapshot: Codable {
         repsAllTime: 0,
         activeDayTimestamps: [],
         remindersEnabled: false,
-        reminderHour: 19
+        reminderHour: 19,
+        remindersAsked: true
     )
 
     static func decode(from json: String) -> AppSnapshot {

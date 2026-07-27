@@ -4,9 +4,10 @@ struct WorkoutView: View {
     @ObservedObject var bridge = NativeUIBridge.shared
     @Environment(\.dismiss) private var dismiss
     @Namespace private var namespace
+    @State private var showCancelConfirm = false
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
             DFColor.background.ignoresSafeArea()
 
             switch bridge.workoutState {
@@ -31,8 +32,39 @@ struct WorkoutView: View {
                     dismiss()
                 }
             }
+
+            if !isFinishedState {
+                CloseButton {
+                    if isReadyState {
+                        dismiss()
+                    } else {
+                        showCancelConfirm = true
+                    }
+                }
+                .padding(.top, 8)
+                .padding(.leading, DFSpacing.screenPadding)
+            }
         }
         .animation(.smooth, value: isTrackingState)
+        .alert("Discard this workout?", isPresented: $showCancelConfirm) {
+            Button("Keep going", role: .cancel) {}
+            Button("Discard", role: .destructive) {
+                bridge.cancelWorkout()
+                dismiss()
+            }
+        } message: {
+            Text("Your progress in this session won't be saved.")
+        }
+    }
+
+    private var isReadyState: Bool {
+        if case .ready = bridge.workoutState { return true }
+        return false
+    }
+
+    private var isFinishedState: Bool {
+        if case .finished = bridge.workoutState { return true }
+        return false
     }
 
     private var isTrackingState: Int {
@@ -42,6 +74,21 @@ struct WorkoutView: View {
         case .resting: return 2
         case .finished: return 3
         }
+    }
+}
+
+private struct CloseButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "xmark")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(DFColor.textPrimary)
+                .frame(width: 40, height: 40)
+        }
+        .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
     }
 }
 

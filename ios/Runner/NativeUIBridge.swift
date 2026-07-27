@@ -7,6 +7,7 @@ final class NativeUIBridge: ObservableObject {
 
     @Published var snapshot: AppSnapshot = .empty
     @Published var workoutState: WorkoutUIState = .ready(supported: true)
+    @Published var supported: Bool = true
 
     private var channel: FlutterMethodChannel?
 
@@ -46,8 +47,9 @@ final class NativeUIBridge: ObservableObject {
             }
             result(nil)
         case "workoutReady":
-            let supported = (call.arguments as? [String: Any])?["supported"] as? Bool ?? true
-            workoutState = .ready(supported: supported)
+            let isSupported = (call.arguments as? [String: Any])?["supported"] as? Bool ?? true
+            supported = isSupported
+            workoutState = .ready(supported: isSupported)
             result(nil)
         default:
             result(FlutterMethodNotImplemented)
@@ -61,12 +63,17 @@ final class NativeUIBridge: ObservableObject {
     func startWorkoutSet() { send("startSet") }
     func endWorkoutSet() { send("endSet") }
     func finishWorkout() { send("finishWorkout") }
+    func cancelWorkout() {
+        send("cancelWorkout")
+        workoutState = .ready(supported: supported)
+    }
     func requestExport() { send("exportBackup") }
     func requestImport() { send("importBackup") }
     func requestWipe() { send("wipeData") }
     func setRemindersEnabled(_ enabled: Bool, hour: Int) {
         send("setReminders", ["enabled": enabled, "hour": hour])
     }
+    func declineReminders() { send("declineReminders") }
     func requestShareCard() { send("shareCard") }
 }
 

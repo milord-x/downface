@@ -24,6 +24,8 @@
 		1AE03AAAC4F24F03B3CBE265 /* ShareCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D3FC2A4C9C412886F3DD13 /* ShareCardView.swift */; };
 		EE0F6AAA693E4EF395313037 /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A71677916A43ADB6D0EB04 /* StatsView.swift */; };
 		9F41BCF5919F420C99B4E7A4 /* WorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B93499652CD4A7CB74A54E5 /* WorkoutView.swift */; };
+		9C1A00000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9C1A00000000000000000002 /* Localizable.xcstrings */; };
+		9C1A00000000000000000003 /* ReminderOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A00000000000000000004 /* ReminderOnboardingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +77,8 @@
 		B4D3FC2A4C9C412886F3DD13 /* ShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardView.swift; sourceTree = "<group>"; };
 		39A71677916A43ADB6D0EB04 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		0B93499652CD4A7CB74A54E5 /* WorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutView.swift; sourceTree = "<group>"; };
+		9C1A00000000000000000002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Resources/Localizable.xcstrings; sourceTree = "<group>"; };
+		9C1A00000000000000000004 /* ReminderOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderOnboardingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +142,7 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				1A2B3C4D0E1F2A3B4C5D6E71 /* FaceTracker.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				9C1A00000000000000000002 /* Localizable.xcstrings */,
 				EB3D5848FE1047F2812C3BBF /* AppSnapshot.swift */,
 				484AA3F01AA94FDDA33C68BA /* DesignSystem.swift */,
 				CEAC97A55D5344B68603D92F /* NativeRootViewController.swift */,
@@ -155,6 +160,7 @@
 				B4D3FC2A4C9C412886F3DD13 /* ShareCardView.swift */,
 				39A71677916A43ADB6D0EB04 /* StatsView.swift */,
 				0B93499652CD4A7CB74A54E5 /* WorkoutView.swift */,
+				9C1A00000000000000000004 /* ReminderOnboardingView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -225,6 +231,13 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ru,
+				es,
+				pt,
+				de,
+				fr,
+				"zh-Hans",
+				ja,
 				Base,
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
@@ -254,6 +267,7 @@
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+				9C1A00000000000000000001 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -317,6 +331,7 @@
 				1AE03AAAC4F24F03B3CBE265 /* ShareCardView.swift in Sources */,
 				EE0F6AAA693E4EF395313037 /* StatsView.swift in Sources */,
 				9F41BCF5919F420C99B4E7A4 /* WorkoutView.swift in Sources */,
+				9C1A00000000000000000003 /* ReminderOnboardingView.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

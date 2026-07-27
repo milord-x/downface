@@ -14,11 +14,14 @@ class AppState extends ChangeNotifier {
   bool loaded = false;
   bool remindersEnabled = false;
   int reminderHour = 19;
+  bool remindersAsked = false;
 
   Future<void> load() async {
     workouts = await AppDatabase.instance.allWorkouts();
     remindersEnabled = await _reminders.isEnabled();
     reminderHour = await _reminders.hour();
+    remindersAsked = await _reminders.hasBeenAsked();
+    await _reminders.rescheduleIfEnabled();
     loaded = true;
     notifyListeners();
   }
@@ -27,6 +30,13 @@ class AppState extends ChangeNotifier {
     await _reminders.setEnabled(enabled, hour: hour);
     remindersEnabled = enabled;
     reminderHour = hour;
+    remindersAsked = true;
+    notifyListeners();
+  }
+
+  Future<void> declineReminders() async {
+    await _reminders.markAsked();
+    remindersAsked = true;
     notifyListeners();
   }
 
@@ -94,6 +104,7 @@ class AppState extends ChangeNotifier {
           activeDays.map((d) => d.millisecondsSinceEpoch.toDouble()).toList(),
       'remindersEnabled': remindersEnabled,
       'reminderHour': reminderHour,
+      'remindersAsked': remindersAsked,
     });
   }
 }

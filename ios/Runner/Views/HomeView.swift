@@ -5,6 +5,7 @@ struct HomeView: View {
     @State private var showSettings = false
     @State private var showStats = false
     @State private var showWorkout = false
+    @State private var showReminderOnboarding = false
     @Namespace private var namespace
 
     private var snapshot: AppSnapshot { bridge.snapshot }
@@ -53,7 +54,20 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(isPresented: $showStats) { StatsView() }
-        .fullScreenCover(isPresented: $showWorkout) { WorkoutView() }
+        .fullScreenCover(isPresented: $showWorkout) {
+            WorkoutView()
+                .onAppear {
+                    if case .finished = bridge.workoutState {
+                        bridge.workoutState = .ready(supported: bridge.supported)
+                    }
+                }
+        }
+        .fullScreenCover(isPresented: $showReminderOnboarding) {
+            ReminderOnboardingView()
+        }
+        .onChange(of: snapshot.remindersAsked, initial: true) { _, asked in
+            showReminderOnboarding = !asked
+        }
     }
 
     private var header: some View {

@@ -51,6 +51,8 @@ class NativeBridge {
         await _endSet();
       case 'finishWorkout':
         await _finishWorkout();
+      case 'cancelWorkout':
+        await _cancelWorkout();
       case 'exportBackup':
         await _backup.shareBackup();
       case 'importBackup':
@@ -62,12 +64,21 @@ class NativeBridge {
         final args = call.arguments as Map<dynamic, dynamic>;
         await _appState.setReminders(args['enabled'] as bool, args['hour'] as int);
         _pushSnapshot();
+      case 'declineReminders':
+        await _appState.declineReminders();
+        _pushSnapshot();
     }
     return null;
   }
 
+  static const _staleWorkoutGap = Duration(hours: 2);
+
   Future<void> _startSet() async {
     _restToken++;
+    if (_workoutStart != null && DateTime.now().difference(_setStart ?? _workoutStart!) > _staleWorkoutGap) {
+      _sets.clear();
+      _workoutStart = null;
+    }
     _workoutStart ??= DateTime.now();
     _repCounter.reset();
     _setStart = DateTime.now();
@@ -126,6 +137,15 @@ class NativeBridge {
     _sets.clear();
     _workoutStart = null;
     _channel.invokeMethod('workoutFinished', {'totalReps': totalReps, 'sets': setCount});
+  }
+
+  Future<void> _cancelWorkout() async {
+    _restToken++;
+    await _faceSource.stop();
+    _sets.clear();
+    _workoutStart = null;
+    _setStart = null;
+    _restSeconds = 0;
   }
 
   Future<void> _importBackup() async {
