@@ -28,6 +28,7 @@
 		9C1A00000000000000000003 /* ReminderOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A00000000000000000004 /* ReminderOnboardingView.swift */; };
 		9C1A00000000000000000006 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A00000000000000000007 /* HealthKitService.swift */; };
 		9D0000000000000000000011 /* ActivitySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0000000000000000000010 /* ActivitySnapshot.swift */; };
+		9D0000000000000000000021 /* ActivitySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0000000000000000000010 /* ActivitySnapshot.swift */; };
 		9D0000000000000000000013 /* DownfaceWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0000000000000000000012 /* DownfaceWidget.swift */; };
 		9D000000000000000000000E /* DownfaceWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9D0000000000000000000002 /* DownfaceWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -414,6 +415,7 @@
 				9F41BCF5919F420C99B4E7A4 /* WorkoutView.swift in Sources */,
 				9C1A00000000000000000003 /* ReminderOnboardingView.swift in Sources */,
 				9C1A00000000000000000006 /* HealthKitService.swift in Sources */,
+				9D0000000000000000000021 /* ActivitySnapshot.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
