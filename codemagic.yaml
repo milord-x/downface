@@ -2,6 +2,7 @@ workflows:
   ios-testflight:
     name: iOS → TestFlight
     max_build_duration: 60
+    instance_type: mac_mini_m2
 
     integrations:
       app_store_connect: codemagic-key
@@ -11,12 +12,8 @@ workflows:
       xcode: latest
       cocoapods: default
       ios_signing:
-        provisioning_profiles:
-          - downface_profile
-        certificates:
-          - downface_profile
-      vars:
-        BUNDLE_ID: com.downface.app
+        distribution_type: app_store
+        bundle_identifier: com.downface.app
 
     scripts:
       - name: Install dependencies
@@ -29,11 +26,12 @@ workflows:
         script: xcode-project use-profiles
 
       - name: Build ipa
-        script: flutter build ipa --release
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
 
     artifacts:
       - build/ios/ipa/*.ipa
-      - flutter_drive.log
 
     publishing:
       app_store_connect:
