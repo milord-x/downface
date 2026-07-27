@@ -14,6 +14,7 @@ workflows:
       ios_signing:
         provisioning_profiles:
           - downface_profile
+          - downface_widget_profile
         certificates:
           - downface_profile
 
