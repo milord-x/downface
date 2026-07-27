@@ -14,7 +14,7 @@ workflows:
         provisioning_profiles:
           - downface_profile
         certificates:
-          - downface_distribution
+          - downface_profile
       vars:
         BUNDLE_ID: com.downface.app
 
@@ -29,9 +29,7 @@ workflows:
         script: xcode-project use-profiles
 
       - name: Build ipa
-        script: |
-          flutter build ipa --release \
-            --export-options-plist=/Users/builder/export_options.plist
+        script: flutter build ipa --release
 
     artifacts:
       - build/ios/ipa/*.ipa
