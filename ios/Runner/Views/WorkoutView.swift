@@ -136,15 +136,21 @@ private struct LightBoostButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            Image(systemName: isOn ? "sun.max.fill" : "sun.max")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(isOn ? .black : DFColor.textPrimary)
-                .frame(width: 40, height: 40)
+        let label = Image(systemName: isOn ? "sun.max.fill" : "sun.max")
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(isOn ? .black : DFColor.textPrimary)
+            .frame(width: 40, height: 40)
+
+        if isOn {
+            Button(action: action) { label }
+                .buttonStyle(.glassProminent)
+                .tint(.white)
+                .buttonBorderShape(.circle)
+        } else {
+            Button(action: action) { label }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
         }
-        .buttonStyle(isOn ? .glassProminent : .glass)
-        .tint(isOn ? .white : nil)
-        .buttonBorderShape(.circle)
     }
 }
 
