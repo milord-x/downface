@@ -86,6 +86,11 @@ struct DownfaceWidgetView: View {
                         .foregroundStyle(.white)
                 }
 
+                // TEMPORARY diagnostic
+                Text("d:\(entry.snapshot.repsPerDay.count) t:\(entry.snapshot.reps(on: today))")
+                    .font(.system(size: 8, design: .monospaced))
+                    .foregroundStyle(.orange)
+
                 Spacer(minLength: 0)
 
                 HStack(spacing: layout.spacing) {

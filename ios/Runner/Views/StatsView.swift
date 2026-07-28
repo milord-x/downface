@@ -76,13 +76,27 @@ struct StatsView: View {
 
     // TEMPORARY diagnostic
     private var debugInfo: some View {
-        let today = Date()
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let weeks = 20
+        let start = calendar.date(byAdding: .day, value: -(weeks * 7 - 1), to: today) ?? today
+        let weekdayOfStart = calendar.component(.weekday, from: start)
+        let daysToMonday = (weekdayOfStart + 5) % 7
+        let firstMonday = calendar.date(byAdding: .day, value: -daysToMonday, to: start) ?? start
+        let lastCellDate = calendar.date(byAdding: .day, value: weeks * 7 - 1, to: firstMonday) ?? firstMonday
+
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.dateFormat = "yyyy-MM-dd"
+
+        let repsAtLastCell = snapshot.reps(on: lastCellDate)
         let repsToday = snapshot.reps(on: today)
         let allKeys = snapshot.repsPerDay.keys.sorted().joined(separator: ", ")
-        return Text("debug: reps(on: today)=\(repsToday), keys=[\(allKeys)]")
+
+        return Text("debug: today=\(df.string(from: today)) reps=\(repsToday) | lastCell=\(df.string(from: lastCellDate)) reps=\(repsAtLastCell) | keys=[\(allKeys)]")
             .font(.system(size: 9, design: .monospaced))
             .foregroundStyle(.orange)
-            .lineLimit(3)
+            .lineLimit(4)
     }
 }
 
