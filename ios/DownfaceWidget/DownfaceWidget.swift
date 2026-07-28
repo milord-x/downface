@@ -45,9 +45,18 @@ private struct GridLayout {
 
 struct DownfaceWidgetView: View {
     @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetRenderingMode) private var renderingMode
     let entry: ActivityEntry
 
     private var layout: GridLayout { .forFamily(family) }
+
+    /// iOS 26's tinted/glass home screen mode replaces widget colors with
+    /// a system-applied tint — fighting that with hardcoded black/white
+    /// (which is what made the whole widget render as a solid white
+    /// block) instead of adapting to it. `.accented` / `.vibrant` modes
+    /// get the system's own foreground style; only plain `.fullColor`
+    /// gets our real black/white palette.
+    private var isFullColor: Bool { renderingMode == .fullColor }
 
     private var maxReps: Int {
         entry.snapshot.repsPerDay.values.max() ?? 1
@@ -74,44 +83,47 @@ struct DownfaceWidgetView: View {
         let lastMonday = calendar.date(byAdding: .day, value: -daysSinceMonday, to: today) ?? today
         let firstMonday = calendar.date(byAdding: .day, value: -(layout.weeks - 1) * 7, to: lastMonday) ?? lastMonday
 
-        return ZStack {
-            ContainerRelativeShape().fill(Color.black)
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("DOWNFACE")
+                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .foregroundStyle(isFullColor ? .white.opacity(0.7) : .primary)
+                    .kerning(1.5)
+                Spacer()
+                Text("\(entry.snapshot.currentStreak)d")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(isFullColor ? .white : .primary)
+            }
+            .widgetAccentable(!isFullColor)
 
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("DOWNFACE")
-                        .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.7))
-                        .kerning(1.5)
-                    Spacer()
-                    Text("\(entry.snapshot.currentStreak)d")
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                }
+            Spacer(minLength: 0)
 
-                Spacer(minLength: 0)
+            HStack(spacing: layout.spacing) {
+                ForEach(0..<layout.weeks, id: \.self) { week in
+                    VStack(spacing: layout.spacing) {
+                        ForEach(0..<layout.daysPerWeek, id: \.self) { day in
+                            let date = calendar.date(byAdding: .day, value: week * layout.daysPerWeek + day, to: firstMonday) ?? firstMonday
+                            let isFuture = date > today
+                            let reps = entry.snapshot.reps(on: date)
 
-                HStack(spacing: layout.spacing) {
-                    ForEach(0..<layout.weeks, id: \.self) { week in
-                        VStack(spacing: layout.spacing) {
-                            ForEach(0..<layout.daysPerWeek, id: \.self) { day in
-                                let date = calendar.date(byAdding: .day, value: week * layout.daysPerWeek + day, to: firstMonday) ?? firstMonday
-                                let isFuture = date > today
-                                let reps = entry.snapshot.reps(on: date)
-
-                                RoundedRectangle(cornerRadius: 3, style: .continuous)
-                                    .fill(isFuture ? Color.clear : intensity(for: reps))
-                                    .frame(width: layout.cellSize, height: layout.cellSize)
-                            }
+                            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                                .fill(isFuture ? Color.clear : intensity(for: reps))
+                                .frame(width: layout.cellSize, height: layout.cellSize)
                         }
                     }
                 }
-                .frame(width: layout.gridWidth, height: layout.gridHeight, alignment: .leading)
-                .frame(maxWidth: .infinity, alignment: family == .systemMedium ? .trailing : .center)
-
-                Spacer(minLength: 0)
             }
-            .padding(12)
+            .widgetAccentable(!isFullColor)
+            .frame(width: layout.gridWidth, height: layout.gridHeight, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: family == .systemMedium ? .trailing : .center)
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .containerBackground(for: .widget) {
+            if isFullColor {
+                Color.black
+            }
         }
     }
 }
@@ -122,7 +134,6 @@ struct DownfaceWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ActivityProvider()) { entry in
             DownfaceWidgetView(entry: entry)
-                .containerBackground(.black, for: .widget)
         }
         .configurationDisplayName("Downface Activity")
         .description("Your push-up streak, at a glance.")
