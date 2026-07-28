@@ -2,13 +2,15 @@
   "images" : [
     {
       "filename" : "AltIconArrows@2x.png",
-      "idiom" : "universal",
-      "scale" : "2x"
+      "idiom" : "iphone",
+      "scale" : "2x",
+      "size" : "60x60"
     },
     {
       "filename" : "AltIconArrows@3x.png",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "idiom" : "iphone",
+      "scale" : "3x",
+      "size" : "60x60"
     }
   ],
   "info" : {
