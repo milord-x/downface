@@ -49,5 +49,39 @@
 		<string>arm64</string>
 		<string>arkit</string>
 	</array>
+	<key>CFBundleIcons</key>
+	<dict>
+		<key>CFBundlePrimaryIcon</key>
+		<dict>
+			<key>CFBundleIconFiles</key>
+			<array>
+				<string>AppIcon</string>
+			</array>
+		</dict>
+		<key>CFBundleAlternateIcons</key>
+		<dict>
+			<key>AltIconClassic</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>AltIconClassic</string>
+				</array>
+			</dict>
+			<key>AltIconArrows</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>AltIconArrows</string>
+				</array>
+			</dict>
+			<key>AltIconHands</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>AltIconHands</string>
+				</array>
+			</dict>
+		</dict>
+	</dict>
 </dict>
 </plist>

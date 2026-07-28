@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
@@ -43,6 +44,13 @@ class RemindersService {
   Future<void> _ensureInit() async {
     if (_initialized) return;
     tzdata.initializeTimeZones();
+    // tz.local defaults to UTC until a location is explicitly set — without
+    // this, every zonedSchedule call below silently plans notifications
+    // against UTC instead of the device's real timezone, so a reminder set
+    // for e.g. 19:00 fires at 19:00 UTC instead and never seems to arrive
+    // at the expected local time.
+    final deviceTimezone = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(deviceTimezone.identifier));
     await _plugin.initialize(const InitializationSettings(
       iOS: DarwinInitializationSettings(),
     ));
@@ -71,7 +79,8 @@ class RemindersService {
       return minutes;
     }
 
-    return [19 * 60];
+    final now = DateTime.now();
+    return [now.hour * 60 + now.minute];
   }
 
   Future<bool> hasBeenAsked() async {
@@ -84,26 +93,35 @@ class RemindersService {
     await prefs.setBool(_askedKey, true);
   }
 
-  Future<void> setEnabled(bool enabled, {List<int>? minutesOfDay}) async {
+  /// Returns whether reminders actually ended up enabled — false if the
+  /// user asked to enable them but denied (or had already denied) the
+  /// system notification permission, so the caller can reflect that back
+  /// in the UI instead of showing an "on" toggle that silently never fires.
+  Future<bool> setEnabled(bool enabled, {List<int>? minutesOfDay}) async {
     await _ensureInit();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_prefKey, enabled);
     if (minutesOfDay != null) {
       await prefs.setString(_minutesKey, jsonEncode(minutesOfDay));
     }
     await prefs.setBool(_askedKey, true);
 
     if (!enabled) {
+      await prefs.setBool(_prefKey, false);
       await _cancelAll();
-      return;
+      return false;
     }
 
     final granted = await _plugin
         .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
         ?.requestPermissions(alert: true, badge: true, sound: true);
-    if (granted == false) return;
+    if (granted == false) {
+      await prefs.setBool(_prefKey, false);
+      return false;
+    }
 
+    await prefs.setBool(_prefKey, true);
     await _scheduleAll(minutesOfDay: minutesOfDay ?? await this.minutesOfDay(), streakAtRisk: false);
+    return true;
   }
 
   Future<void> _cancelAll() async {

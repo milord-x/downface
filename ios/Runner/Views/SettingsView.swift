@@ -7,7 +7,17 @@ struct SettingsView: View {
     @State private var showWipeConfirm = false
     @State private var statusMessage: LocalizedStringKey?
     @State private var showAddTime = false
-    @State private var newTimeMinutesOfDay = 19 * 60
+    @State private var newTimeMinutesOfDay = Self.currentMinutesOfDay
+
+    /// The time picker's minute wheel only offers 5-minute steps, so the
+    /// raw current minute (e.g. 37) wouldn't match any picker tag and would
+    /// render blank — round to the nearest step the wheel actually has.
+    private static var currentMinutesOfDay: Int {
+        let now = Calendar.current.dateComponents([.hour, .minute], from: Date())
+        let totalMinutes = (now.hour ?? 19) * 60 + (now.minute ?? 0)
+        let rounded = (totalMinutes / 5) * 5
+        return rounded % (24 * 60)
+    }
 
     private var uses24HourClock: Bool {
         let formatter = DateFormatter()
@@ -21,6 +31,7 @@ struct SettingsView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     appearanceCard
+                    appIconCard
                     remindersCard
                     supportCard
                     groupedCard {
@@ -95,6 +106,40 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - App icon
+
+    private var appIconCard: some View {
+        groupedCard {
+            Text("App icon")
+                .foregroundStyle(DFColor.textPrimary)
+                .padding(.bottom, 8)
+
+            HStack(spacing: 16) {
+                ForEach(AppIconOption.allCases) { option in
+                    appIconButton(option)
+                }
+                Spacer()
+            }
+        }
+    }
+
+    private func appIconButton(_ option: AppIconOption) -> some View {
+        let isSelected = UIApplication.shared.alternateIconName == option.iconName
+        return Button {
+            guard UIApplication.shared.alternateIconName != option.iconName else { return }
+            UIApplication.shared.setAlternateIconName(option.iconName)
+        } label: {
+            Image(option.assetName)
+                .resizable()
+                .frame(width: 56, height: 56)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(isSelected ? DFColor.textPrimary : .clear, lineWidth: 2)
+                )
+        }
+    }
+
     // MARK: - Reminders
 
     private var remindersCard: some View {
@@ -134,7 +179,7 @@ struct SettingsView: View {
 
                 SettingsDivider()
                 Button {
-                    newTimeMinutesOfDay = 19 * 60
+                    newTimeMinutesOfDay = Self.currentMinutesOfDay
                     showAddTime = true
                 } label: {
                     HStack {
@@ -395,6 +440,33 @@ struct SettingsView: View {
     Backups you export are encrypted and only readable by Downface itself. \
     Nothing is ever sent anywhere.
     """
+}
+
+private enum AppIconOption: String, CaseIterable, Identifiable {
+    case primary
+    case classic
+    case arrows
+    case hands
+
+    var id: String { rawValue }
+
+    var iconName: String? {
+        switch self {
+        case .primary: return nil
+        case .classic: return "AltIconClassic"
+        case .arrows: return "AltIconArrows"
+        case .hands: return "AltIconHands"
+        }
+    }
+
+    var assetName: String {
+        switch self {
+        case .primary: return "AppIconPreview"
+        case .classic: return "AltIconClassic"
+        case .arrows: return "AltIconArrows"
+        case .hands: return "AltIconHands"
+        }
+    }
 }
 
 private struct SettingsDivider: View {

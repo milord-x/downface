@@ -30,9 +30,15 @@ final class HealthKitService {
         builder.beginCollection(withStart: start) { _, _ in
             let energy = HKQuantity(unit: .kilocalorie(), doubleValue: Double(totalReps) * Self.kcalPerRep)
             let sample = HKCumulativeQuantitySample(type: self.energyType, quantity: energy, start: start, end: end)
-            builder.add([sample]) { _, _ in
-                builder.endCollection(withEnd: end) { _, _ in
-                    builder.finishWorkout { _, _ in }
+            // HealthKit has no rep-count quantity type for push-ups, so the
+            // stock Health app card always shows duration/energy — this
+            // metadata key at least makes total reps readable by other apps
+            // and in the workout's own detail view.
+            builder.addMetadata(["reps_total": totalReps]) { _, _ in
+                builder.add([sample]) { _, _ in
+                    builder.endCollection(withEnd: end) { _, _ in
+                        builder.finishWorkout { _, _ in }
+                    }
                 }
             }
         }

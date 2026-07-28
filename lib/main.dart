@@ -88,7 +88,7 @@ class NativeBridge {
     _faceSource.samples().listen((sample) {
       final event = _repCounter.onDistanceSample(sample.distance, sample.timestampMs);
       if (event != null) {
-        _channel.invokeMethod('workoutTracking', {'reps': _repCounter.reps});
+        _channel.invokeMethod('workoutTracking', {'reps': _repCounter.reps, 'fatigued': event.fatigued});
       }
     });
     _channel.invokeMethod('workoutTracking', {'reps': 0});
@@ -105,7 +105,7 @@ class NativeBridge {
       startedAt: start,
       endedAt: DateTime.now(),
       restBeforeSeconds: _restSeconds,
-      repDurationsMs: _repCounter.lastRepDurationMs == null ? [] : [_repCounter.lastRepDurationMs!],
+      repDurationsMs: List.of(_repCounter.repDurationsMs),
     ));
     _restSeconds = 0;
     _restToken++;

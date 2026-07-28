@@ -13,7 +13,7 @@ class AppState extends ChangeNotifier {
   List<Workout> workouts = [];
   bool loaded = false;
   bool remindersEnabled = false;
-  List<int> reminderMinutes = [19 * 60];
+  List<int> reminderMinutes = [DateTime.now().hour * 60 + DateTime.now().minute];
   bool remindersAsked = false;
 
   bool get _didWorkoutToday => activeDays.contains(DateTime(
@@ -35,8 +35,8 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> setReminders(bool enabled, List<int> minutesOfDay) async {
-    await _reminders.setEnabled(enabled, minutesOfDay: minutesOfDay);
-    remindersEnabled = enabled;
+    final actuallyEnabled = await _reminders.setEnabled(enabled, minutesOfDay: minutesOfDay);
+    remindersEnabled = actuallyEnabled;
     reminderMinutes = minutesOfDay;
     remindersAsked = true;
     notifyListeners();

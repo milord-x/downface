@@ -24,7 +24,7 @@ struct ShareCardView: View {
                     ShareLink(
                         items: [cardFileURL],
                         subject: Text("My Downface stats"),
-                        message: Text("\(snapshot.repsAllTime) push-ups tracked with Downface \u{2014} the offline push-up counter that watches your face, not a sensor."),
+                        message: Text(String(format: NSLocalizedString("%lld push-ups tracked with Downface \u{2014} the offline push-up counter that watches your face, not a sensor.", comment: ""), snapshot.repsAllTime)),
                         preview: { url in
                             SharePreview("Downface stats", image: Image(uiImage: UIImage(contentsOfFile: url.path) ?? UIImage()))
                         }

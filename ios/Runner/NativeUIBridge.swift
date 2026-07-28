@@ -35,7 +35,8 @@ final class NativeUIBridge: ObservableObject {
         case "workoutTracking":
             if let args = call.arguments as? [String: Any] {
                 let reps = args["reps"] as? Int ?? 0
-                workoutState = .tracking(reps: reps)
+                let fatigued = args["fatigued"] as? Bool ?? false
+                workoutState = .tracking(reps: reps, fatigued: fatigued)
             }
             result(nil)
         case "workoutResting":
@@ -146,7 +147,7 @@ final class NativeUIBridge: ObservableObject {
 
 enum WorkoutUIState {
     case ready(supported: Bool)
-    case tracking(reps: Int)
+    case tracking(reps: Int, fatigued: Bool)
     case resting(seconds: Int, setsSoFar: Int)
     case finished(totalReps: Int, sets: Int)
 }

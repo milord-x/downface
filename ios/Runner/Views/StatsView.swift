@@ -183,20 +183,74 @@ private struct ActivityGrid: View {
         return String(format: NSLocalizedString(key, comment: ""), reps)
     }
 
+    private func setsCountText(_ count: Int) -> String {
+        let key = count == 1 ? "%lld set" : "%lld sets"
+        return String(format: NSLocalizedString(key, comment: ""), count)
+    }
+
+    private func setLabelText(_ index: Int) -> String {
+        String(format: NSLocalizedString("set %lld", comment: ""), index)
+    }
+
+    private func restText(_ seconds: Int) -> String {
+        String(format: NSLocalizedString("rest %llds", comment: ""), seconds)
+    }
+
+    private func setsOn(_ date: Date) -> [WorkoutSetSnapshot] {
+        let calendar = Calendar.current
+        return snapshot.workouts
+            .filter { calendar.isDate(Date(timeIntervalSince1970: $0.startedAt / 1000), inSameDayAs: date) }
+            .flatMap { $0.sets }
+            .sorted { $0.startedAt < $1.startedAt }
+    }
+
     private func dayDetail(date: Date, reps: Int) -> some View {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMM d"
-        return HStack {
-            Text(formatter.string(from: date))
-                .font(DFType.caption)
-                .foregroundStyle(DFColor.textSecondary)
-            Spacer()
-            Text(reps > 0 ? repsText(reps) : "no workout")
-                .font(DFType.caption.weight(.semibold))
-                .foregroundStyle(reps > 0 ? DFColor.textPrimary : DFColor.textTertiary)
+        let sets = setsOn(date)
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(formatter.string(from: date))
+                    .font(DFType.caption)
+                    .foregroundStyle(DFColor.textSecondary)
+                Spacer()
+                Text(reps > 0 ? repsText(reps) : "no workout")
+                    .font(DFType.caption.weight(.semibold))
+                    .foregroundStyle(reps > 0 ? DFColor.textPrimary : DFColor.textTertiary)
+            }
+
+            if !sets.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text(setsCountText(sets.count))
+                            .font(DFType.caption.weight(.semibold))
+                            .foregroundStyle(DFColor.textPrimary)
+                        Spacer()
+                    }
+
+                    ForEach(Array(sets.enumerated()), id: \.offset) { index, set in
+                        HStack {
+                            Text(setLabelText(index + 1))
+                                .font(DFType.caption)
+                                .foregroundStyle(DFColor.textTertiary)
+                            Spacer()
+                            if set.restBeforeSeconds > 0 {
+                                Text(restText(set.restBeforeSeconds))
+                                    .font(DFType.caption)
+                                    .foregroundStyle(DFColor.textTertiary)
+                            }
+                            Text(repsText(set.reps))
+                                .font(DFType.caption.weight(.medium))
+                                .foregroundStyle(DFColor.textSecondary)
+                        }
+                    }
+                }
+                .padding(.top, 2)
+            }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .background(DFColor.cardFillStrong, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .transition(.opacity.combined(with: .move(edge: .top)))
         .animation(.smooth, value: date)

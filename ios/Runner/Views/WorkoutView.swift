@@ -23,8 +23,8 @@ struct WorkoutView: View {
                 ReadyStateView(supported: supported, namespace: namespace) {
                     bridge.startWorkoutSet()
                 }
-            case .tracking(let reps):
-                TrackingStateView(reps: reps, namespace: namespace) {
+            case .tracking(let reps, let fatigued):
+                TrackingStateView(reps: reps, fatigued: fatigued, namespace: namespace) {
                     bridge.endWorkoutSet()
                 }
             case .resting(let seconds, let setsSoFar):
@@ -240,41 +240,97 @@ private struct ReadyStateView: View {
 
 private struct TrackingStateView: View {
     let reps: Int
+    let fatigued: Bool
     let namespace: Namespace.ID
     let onEndSet: () -> Void
 
     var body: some View {
-        VStack(spacing: 8) {
-            Spacer()
+        ZStack {
+            VStack(spacing: 8) {
+                Spacer()
 
-            Text("\(reps)")
-                .font(.system(size: 96, weight: .heavy, design: .rounded))
-                .foregroundStyle(DFColor.textPrimary)
-                .contentTransition(.numericText())
+                Text("\(reps)")
+                    .font(.system(size: 96, weight: .heavy, design: .rounded))
+                    .foregroundStyle(DFColor.textPrimary)
+                    .contentTransition(.numericText())
 
-            Text("reps")
-                .font(DFType.caption)
-                .foregroundStyle(DFColor.textSecondary)
+                Text("reps")
+                    .font(DFType.caption)
+                    .foregroundStyle(DFColor.textSecondary)
 
-            Spacer()
+                Spacer()
 
-            GlassEffectContainer(spacing: 16) {
-                Button {
-                    onEndSet()
-                } label: {
-                    Text("end set")
-                        .font(DFType.body.weight(.bold))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
+                GlassEffectContainer(spacing: 16) {
+                    Button {
+                        onEndSet()
+                    } label: {
+                        Text("end set")
+                            .font(DFType.body.weight(.bold))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .tint(.white)
+                    .foregroundStyle(.black)
+                    .glassEffectID("primary", in: namespace)
                 }
-                .buttonStyle(.glassProminent)
-                .tint(.white)
-                .foregroundStyle(.black)
-                .glassEffectID("primary", in: namespace)
+                .padding(.horizontal, DFSpacing.screenPadding)
+                .padding(.bottom, 24)
             }
-            .padding(.horizontal, DFSpacing.screenPadding)
-            .padding(.bottom, 24)
+
+            if fatigued {
+                FatigueBadge()
+            }
         }
+    }
+}
+
+private struct FatigueBadge: View {
+    @State private var message = Self.messages.randomElement() ?? Self.messages[0]
+    @State private var corner = Corner.allCases.randomElement() ?? .topTrailing
+    @State private var visible = true
+
+    private enum Corner: CaseIterable {
+        case topLeading, topTrailing
+
+        var alignment: Alignment { self == .topLeading ? .topLeading : .topTrailing }
+    }
+
+    private static let messages = [
+        NSLocalizedString("looking tired, take it easy", comment: ""),
+        NSLocalizedString("slowing down, maybe rest? \u{1F494}", comment: ""),
+        NSLocalizedString("form's slipping, breathe", comment: ""),
+        NSLocalizedString("you've earned a break", comment: ""),
+        NSLocalizedString("easy now, no rush \u{1FAF6}", comment: ""),
+        NSLocalizedString("your pace says you're tired", comment: ""),
+        NSLocalizedString("a short rest won't hurt \u{1F49B}", comment: ""),
+        NSLocalizedString("listen to your body", comment: ""),
+        NSLocalizedString("nice effort, ease up a little \u{2728}", comment: ""),
+        NSLocalizedString("getting slower, take your time", comment: ""),
+    ]
+
+    var body: some View {
+        GeometryReader { geo in
+            if visible {
+                Text(message)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(DFColor.textSecondary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(DFColor.cardFillStrong, in: Capsule())
+                    .frame(maxWidth: geo.size.width, alignment: corner.alignment)
+                    .padding(.top, 12)
+                    .padding(.horizontal, DFSpacing.screenPadding)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .onTapGesture { visible = false }
+                    .task {
+                        try? await Task.sleep(for: .seconds(4))
+                        visible = false
+                    }
+            }
+        }
+        .animation(.smooth, value: visible)
+        .allowsHitTesting(true)
     }
 }
 
@@ -344,6 +400,16 @@ private struct FinishedStateView: View {
     let namespace: Namespace.ID
     let onDone: () -> Void
 
+    private var totalRepsText: String {
+        let key = totalReps == 1 ? "%lld rep" : "%lld reps"
+        return String(format: NSLocalizedString(key, comment: ""), totalReps)
+    }
+
+    private var setsLoggedText: String {
+        let key = sets == 1 ? "%lld set logged" : "%lld sets logged"
+        return String(format: NSLocalizedString(key, comment: ""), sets)
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             Spacer()
@@ -353,11 +419,11 @@ private struct FinishedStateView: View {
                 .foregroundStyle(DFColor.textPrimary)
                 .padding(.bottom, 12)
 
-            Text("\(totalReps) reps")
+            Text(totalRepsText)
                 .font(DFType.number)
                 .foregroundStyle(DFColor.textPrimary)
 
-            Text("\(sets) sets logged")
+            Text(setsLoggedText)
                 .font(DFType.caption)
                 .foregroundStyle(DFColor.textSecondary)
 
