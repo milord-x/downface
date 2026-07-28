@@ -96,7 +96,7 @@ struct HomeView: View {
             StatsView()
                 .preferredColorScheme(themeManager.theme.colorScheme)
         }
-        .fullScreenCover(isPresented: $showWorkout) {
+        .fullScreenCover(isPresented: $showWorkout, onDismiss: startFlightIfNeeded) {
             WorkoutView()
                 .preferredColorScheme(themeManager.theme.colorScheme)
                 .onAppear {
@@ -104,8 +104,6 @@ struct HomeView: View {
                         bridge.workoutState = .ready(supported: bridge.supported)
                     }
                 }
-        } onDismiss: {
-            startFlightIfNeeded()
         }
         .fullScreenCover(isPresented: $showReminderOnboarding) {
             ReminderOnboardingView()

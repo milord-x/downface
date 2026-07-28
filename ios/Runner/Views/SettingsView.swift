@@ -195,8 +195,8 @@ struct SettingsView: View {
                         }
                     }
                     .foregroundStyle(DFColor.textPrimary)
+                    .padding(.vertical, 4)
                 }
-                .padding(.vertical, 4)
             }
         }
     }
