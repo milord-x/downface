@@ -8,10 +8,13 @@ struct SettingsView: View {
     @State private var statusMessage: LocalizedStringKey?
     @State private var showAddTime = false
     @State private var newTimeMinutesOfDay = Self.currentMinutesOfDay
+    @State private var selectedAppIcon = AppIconOption.current
+
+    private static let maxReminderTimes = 4
 
     /// The time picker's minute wheel only offers 5-minute steps, so the
     /// raw current minute (e.g. 37) wouldn't match any picker tag and would
-    /// render blank — round to the nearest step the wheel actually has.
+    /// render blank – round to the nearest step the wheel actually has.
     private static var currentMinutesOfDay: Int {
         let now = Calendar.current.dateComponents([.hour, .minute], from: Date())
         let totalMinutes = (now.hour ?? 19) * 60 + (now.minute ?? 0)
@@ -124,10 +127,12 @@ struct SettingsView: View {
     }
 
     private func appIconButton(_ option: AppIconOption) -> some View {
-        let isSelected = UIApplication.shared.alternateIconName == option.iconName
-        return Button {
-            guard UIApplication.shared.alternateIconName != option.iconName else { return }
-            UIApplication.shared.setAlternateIconName(option.iconName)
+        Button {
+            guard selectedAppIcon != option else { return }
+            UIApplication.shared.setAlternateIconName(option.iconName) { error in
+                guard error == nil else { return }
+                Task { @MainActor in selectedAppIcon = option }
+            }
         } label: {
             Image(option.assetName)
                 .resizable()
@@ -135,7 +140,7 @@ struct SettingsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(isSelected ? DFColor.textPrimary : .clear, lineWidth: 2)
+                        .stroke(selectedAppIcon == option ? DFColor.textPrimary : .clear, lineWidth: 2)
                 )
         }
     }
@@ -177,18 +182,20 @@ struct SettingsView: View {
                     .padding(.vertical, 4)
                 }
 
-                SettingsDivider()
-                Button {
-                    newTimeMinutesOfDay = Self.currentMinutesOfDay
-                    showAddTime = true
-                } label: {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                        Text("Add another time")
-                        Spacer()
+                if bridge.snapshot.reminderMinutes.count < Self.maxReminderTimes {
+                    SettingsDivider()
+                    Button {
+                        newTimeMinutesOfDay = Self.currentMinutesOfDay
+                        showAddTime = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Add another time")
+                            Spacer()
+                        }
                     }
+                    .foregroundStyle(DFColor.textPrimary)
                 }
-                .foregroundStyle(DFColor.textPrimary)
                 .padding(.vertical, 4)
             }
         }
@@ -427,18 +434,35 @@ struct SettingsView: View {
     }
 
     private static let termsText = """
-    Downface is provided as-is, free of charge, with no warranty of any kind. \
-    You use it at your own risk, including for any physical activity performed with it. \
-    All workout data stays on your device unless you explicitly export it. \
-    The source code is available under the MIT license \u{2014} see the GitHub repository for details.
+    Downface is a free app, provided as-is, with no warranty of any kind. There's no subscription, no paywall, and nothing to buy inside the app.
+
+    You use Downface at your own risk. Push-ups and any physical activity you do while using this app are your own responsibility \u{2013} if you have a health condition, an injury, or any doubt about whether an exercise is safe for you, talk to a doctor before you start. Downface counts reps, it doesn't replace medical advice.
+
+    The app tracks your head position with the camera to count reps. It doesn't grade your form and can't tell you if you're doing a push-up correctly or safely. Go at your own pace and stop if something hurts.
+
+    All your workout data (reps, sets, dates, streaks) stays on your device. Nothing is uploaded anywhere unless you choose to export a backup file yourself, and that file only goes where you send it.
+
+    Downface's source code is open and available under the MIT license. You can read it, audit it, or build your own version \u{2013} see the GitHub repository linked in this screen for the full license text and the code itself.
+
+    "Downface" as a name and its icon are not covered by that license \u{2013} they identify this specific app. The code is free to reuse, the branding isn't.
+
+    We can change these terms in a future update if the app changes in a way that needs it. If that happens, the update will be reflected here.
     """
 
     private static let privacyText = """
-    Downface has no server, no analytics, and no account. \
-    Your camera is used only during an active set to track head movement, and no video or image ever leaves your device. \
-    Workout history is stored locally in a SQLite database. \
-    Backups you export are encrypted and only readable by Downface itself. \
-    Nothing is ever sent anywhere.
+    Downface doesn't have a server, an account system, or analytics of any kind. There's no login, so there's no account to hack and no email address stored anywhere.
+
+    The camera turns on only while you're actively doing a set, and only to track how your head moves so the app can count reps. No video, photo, or frame from the camera is ever saved, sent anywhere, or seen by anyone but you \u{2013} it's processed live on your device and then it's gone.
+
+    Your workout history (every set, every rep, every date) is stored locally in a small database on your phone. It never leaves the device unless you export it yourself as a backup file.
+
+    If you turn on Apple Health sync, Downface writes your finished workouts to Health so they show up next to your other activity. Downface never reads anything back from Health \u{2013} it only writes.
+
+    Backup files you export are encrypted before they're written to disk. Only Downface can open and read them back \u{2013} if you send a backup to someone or store it in the cloud yourself, it stays useless without the app.
+
+    If you allow notifications, they're scheduled and delivered entirely by iOS on your own device. Downface has no way to know whether a reminder was seen, tapped, or ignored.
+
+    Since nothing about you or your workouts ever reaches us, there's no data to sell, share, or lose in a breach. If that ever changes, this page will change first.
     """
 }
 
@@ -449,6 +473,10 @@ private enum AppIconOption: String, CaseIterable, Identifiable {
     case hands
 
     var id: String { rawValue }
+
+    static var current: AppIconOption {
+        allCases.first { $0.iconName == UIApplication.shared.alternateIconName } ?? .primary
+    }
 
     var iconName: String? {
         switch self {
@@ -462,9 +490,9 @@ private enum AppIconOption: String, CaseIterable, Identifiable {
     var assetName: String {
         switch self {
         case .primary: return "AppIconPreview"
-        case .classic: return "AltIconClassic"
-        case .arrows: return "AltIconArrows"
-        case .hands: return "AltIconHands"
+        case .classic: return "AltIconClassicPreview"
+        case .arrows: return "AltIconArrowsPreview"
+        case .hands: return "AltIconHandsPreview"
         }
     }
 }

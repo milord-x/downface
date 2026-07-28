@@ -13,7 +13,8 @@ class RepCounter {
     this.upThreshold = 0.015,
     this.minRepMs = 400,
     this.fatigueRepThreshold = 4,
-    this.fatigueSlowdownRatio = 1.45,
+    this.fatigueSlowdownRatio = 1.35,
+    this.fatigueWindow = 3,
   });
 
   final double downThreshold;
@@ -25,10 +26,16 @@ class RepCounter {
   /// against.
   final int fatigueRepThreshold;
 
-  /// A rep is flagged as fatigued once its cycle takes this many times
-  /// longer than the set's baseline pace (average of its first
-  /// [fatigueRepThreshold] reps).
+  /// Fatigue triggers once the rolling average of the last [fatigueWindow]
+  /// reps is this many times slower than the set's baseline pace (average
+  /// of its first [fatigueRepThreshold] reps). Comparing a rolling average
+  /// instead of a single rep means one noisy sample (camera jitter, a brief
+  /// pause to adjust position) can't flip the flag on its own — it takes a
+  /// sustained slowdown across several reps in a row.
   final double fatigueSlowdownRatio;
+
+  /// How many of the most recent reps are averaged for the fatigue check.
+  final int fatigueWindow;
 
   double? _baseline;
   RepPhase _phase = RepPhase.up;
@@ -36,6 +43,7 @@ class RepCounter {
   int? _repStartMs;
   int? _lastRepDurationMs;
   final List<int> repDurationsMs = [];
+  bool _fatigued = false;
 
   int? get lastRepDurationMs => _lastRepDurationMs;
 
@@ -46,6 +54,7 @@ class RepCounter {
     _repStartMs = null;
     _lastRepDurationMs = null;
     repDurationsMs.clear();
+    _fatigued = false;
   }
 
   /// [distance] is the face-to-camera distance in meters. It shrinks as the
@@ -82,16 +91,22 @@ class RepCounter {
       reps++;
       _lastRepDurationMs = durationMs;
       repDurationsMs.add(durationMs);
-      return RepEvent(reps: reps, durationMs: durationMs, fatigued: _isFatigued(durationMs));
+      // Once flagged, fatigue stays on for the rest of the set instead of
+      // flickering off the moment one rep happens to land back near the
+      // baseline pace — a real tired set doesn't suddenly stop being tired.
+      _fatigued = _fatigued || _isFatigued();
+      return RepEvent(reps: reps, durationMs: durationMs, fatigued: _fatigued);
     }
 
     return null;
   }
 
-  bool _isFatigued(int durationMs) {
-    if (reps <= fatigueRepThreshold) return false;
+  bool _isFatigued() {
+    if (reps < fatigueRepThreshold + fatigueWindow) return false;
     final baseline = repDurationsMs.take(fatigueRepThreshold);
     final baselineAvg = baseline.reduce((a, b) => a + b) / baseline.length;
-    return durationMs > baselineAvg * fatigueSlowdownRatio;
+    final recent = repDurationsMs.skip(repDurationsMs.length - fatigueWindow);
+    final recentAvg = recent.reduce((a, b) => a + b) / recent.length;
+    return recentAvg > baselineAvg * fatigueSlowdownRatio;
   }
 }

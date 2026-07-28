@@ -10,7 +10,24 @@ struct HomeView: View {
     @State private var appeared = false
     @Namespace private var namespace
 
+    /// These four figures are what's actually on screen. They only catch up
+    /// to the live snapshot once the rep-count flight animation lands (see
+    /// `pendingRepsFlight`), or immediately if no flight is in progress — so
+    /// none of the cards jump to the new totals before the flying number
+    /// visually arrives, even though the Dart side already pushed the
+    /// updated snapshot the moment the finished-workout screen appeared.
+    @State private var frozenStats: FrozenStats?
+    @State private var todayCardFrame: CGRect = .zero
+    @State private var flight: PendingRepsFlight?
+    @State private var flightProgress: CGFloat = 0
+
     private var snapshot: AppSnapshot { bridge.snapshot }
+
+    private var repsToday: Int { frozenStats?.repsToday ?? snapshot.repsToday }
+    private var repsThisWeek: Int { frozenStats?.repsThisWeek ?? snapshot.repsThisWeek }
+    private var repsThisMonth: Int { frozenStats?.repsThisMonth ?? snapshot.repsThisMonth }
+    private var repsAllTime: Int { frozenStats?.repsAllTime ?? snapshot.repsAllTime }
+    private var streakCurrent: Int { frozenStats?.streakCurrent ?? snapshot.streak.current }
 
     private var weekdayCompleted: Set<Int> {
         let calendar = Calendar.current
@@ -33,21 +50,21 @@ struct HomeView: View {
             VStack(spacing: DFSpacing.stackGap) {
                 header
 
-                TodayCard(reps: snapshot.repsToday)
+                TodayCard(reps: repsToday)
                     .opacity(appeared ? 1 : 0)
                     .offset(y: appeared ? 0 : 8)
 
                 PeriodStatsRow(
-                    week: snapshot.repsThisWeek,
-                    month: snapshot.repsThisMonth,
-                    allTime: snapshot.repsAllTime
+                    week: repsThisWeek,
+                    month: repsThisMonth,
+                    allTime: repsAllTime
                 )
                 .opacity(appeared ? 1 : 0)
                 .offset(y: appeared ? 0 : 8)
                 .animation(.smooth.delay(0.05), value: appeared)
 
                 WeekStreakCard(
-                    streak: snapshot.streak.current,
+                    streak: streakCurrent,
                     completedWeekdays: weekdayCompleted
                 )
                 .opacity(appeared ? 1 : 0)
@@ -61,7 +78,12 @@ struct HomeView: View {
             .padding(.horizontal, DFSpacing.screenPadding)
             .padding(.top, 8)
             .padding(.bottom, 16)
+
+            if let flight {
+                FlyingRepsNumber(reps: flight.reps, from: flight.startFrame, to: todayCardFrame, progress: flightProgress)
+            }
         }
+        .onPreferenceChange(TodayCardCirclePreferenceKey.self) { todayCardFrame = $0 }
         .onAppear {
             withAnimation(.smooth) { appeared = true }
         }
@@ -82,6 +104,8 @@ struct HomeView: View {
                         bridge.workoutState = .ready(supported: bridge.supported)
                     }
                 }
+        } onDismiss: {
+            startFlightIfNeeded()
         }
         .fullScreenCover(isPresented: $showReminderOnboarding) {
             ReminderOnboardingView()
@@ -89,6 +113,41 @@ struct HomeView: View {
         }
         .onChange(of: snapshot.remindersAsked, initial: true) { _, asked in
             showReminderOnboarding = !asked
+        }
+        .onChange(of: showWorkout) { _, opened in
+            // Freeze every figure the workout could change for the whole
+            // time the sheet is up — the Dart side already pushes the
+            // updated snapshot before the finished screen appears, so
+            // without this the cards would silently show the new totals
+            // behind the sheet and the flight animation would land on
+            // numbers that never visibly change.
+            if opened {
+                frozenStats = FrozenStats(snapshot: snapshot)
+            }
+        }
+    }
+
+    /// Picks up the rep count and screen position stashed by the
+    /// finished-workout screen right as the sheet finishes dismissing, and
+    /// animates a copy of that number flying into the today card. The real
+    /// snapshot (already updated) only becomes visible, card by card, once
+    /// the flight lands.
+    private func startFlightIfNeeded() {
+        guard let pending = bridge.pendingRepsFlight else {
+            frozenStats = nil
+            return
+        }
+        bridge.pendingRepsFlight = nil
+        flight = pending
+        flightProgress = 0
+        withAnimation(.spring(response: 0.55, dampingFraction: 0.78)) {
+            flightProgress = 1
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+            withAnimation(.smooth) {
+                frozenStats = nil
+                flight = nil
+            }
         }
     }
 
@@ -140,6 +199,57 @@ struct HomeView: View {
     }
 }
 
+private struct FrozenStats {
+    let repsToday: Int
+    let repsThisWeek: Int
+    let repsThisMonth: Int
+    let repsAllTime: Int
+    let streakCurrent: Int
+
+    init(snapshot: AppSnapshot) {
+        repsToday = snapshot.repsToday
+        repsThisWeek = snapshot.repsThisWeek
+        repsThisMonth = snapshot.repsThisMonth
+        repsAllTime = snapshot.repsAllTime
+        streakCurrent = snapshot.streak.current
+    }
+}
+
+/// Animates a copy of the just-finished rep count from wherever it sat on
+/// the finished-workout screen to the "push-ups today" circle, shrinking
+/// and fading as it arrives so it visually merges into the smaller number
+/// already living there rather than just teleporting between two states.
+private struct FlyingRepsNumber: View {
+    let reps: Int
+    let from: CGRect
+    let to: CGRect
+    let progress: CGFloat
+
+    private var currentFrame: CGRect {
+        CGRect(
+            x: from.minX + (to.midX - from.midX) * progress,
+            y: from.minY + (to.midY - from.midY) * progress,
+            width: from.width,
+            height: from.height
+        )
+    }
+
+    private var scale: CGFloat {
+        let targetScale: CGFloat = 22 / 64
+        return 1 + (targetScale - 1) * progress
+    }
+
+    var body: some View {
+        Text("\(reps)")
+            .font(DFType.number)
+            .foregroundStyle(DFColor.textPrimary)
+            .scaleEffect(scale)
+            .opacity(1 - progress * 0.3)
+            .position(x: currentFrame.midX, y: currentFrame.midY)
+            .allowsHitTesting(false)
+    }
+}
+
 /// The app wordmark in the top-left corner. Uses a slow, seamless
 /// breathing pulse (autoreverse, no easing snap at the loop point) so it
 /// reads as ambient life rather than a jarring blink.
@@ -159,6 +269,13 @@ private struct BrandMark: View {
     }
 }
 
+private struct TodayCardCirclePreferenceKey: PreferenceKey {
+    static let defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
+    }
+}
+
 private struct TodayCard: View {
     let reps: Int
 
@@ -174,6 +291,11 @@ private struct TodayCard: View {
                         .animation(.smooth, value: reps)
                 }
                 .frame(width: 56, height: 56)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.preference(key: TodayCardCirclePreferenceKey.self, value: geo.frame(in: .global))
+                    }
+                )
 
                 Text("push-ups\ntoday")
                     .font(DFType.title)

@@ -22,25 +22,27 @@ struct ActivityProvider: TimelineProvider {
     }
 }
 
-/// Grid geometry, hand-tuned per widget family against the standard iOS
-/// system widget content-area sizes (small 155x155pt, medium 329x155pt)
-/// so cells and gaps line up pixel-perfectly instead of being derived from
-/// GeometryReader at render time.
+/// Fills the given content-area size edge-to-edge with a 7-row grid: the
+/// cell size is solved from the available height first (7 rows + 6 gaps),
+/// then however many whole weeks fit that width are shown — so the grid
+/// always reaches every edge of the widget with even, proportional gaps
+/// instead of a fixed cell size leaving leftover space on one side.
 private struct GridLayout {
     let weeks: Int
     let daysPerWeek = 7
     let cellSize: CGFloat
     let spacing: CGFloat
 
-    static let small = GridLayout(weeks: 7, cellSize: 12, spacing: 2.5)
-    static let medium = GridLayout(weeks: 16, cellSize: 12, spacing: 2.5)
+    static func fitting(weeks maxWeeks: Int, in size: CGSize) -> GridLayout {
+        let gapRatio: CGFloat = 0.22
+        // Solve cellSize from height: size.height = 7*cell + 6*(cell*gapRatio)
+        let cellSize = size.height / (7 + 6 * gapRatio)
+        let spacing = cellSize * gapRatio
 
-    static func forFamily(_ family: WidgetFamily) -> GridLayout {
-        family == .systemMedium ? .medium : .small
+        let weeksThatFit = Int(((size.width + spacing) / (cellSize + spacing)).rounded(.down))
+        let weeks = max(1, min(maxWeeks, weeksThatFit))
+        return GridLayout(weeks: weeks, cellSize: cellSize, spacing: spacing)
     }
-
-    var gridWidth: CGFloat { CGFloat(weeks) * cellSize + CGFloat(weeks - 1) * spacing }
-    var gridHeight: CGFloat { CGFloat(daysPerWeek) * cellSize + CGFloat(daysPerWeek - 1) * spacing }
 }
 
 struct DownfaceWidgetView: View {
@@ -48,7 +50,7 @@ struct DownfaceWidgetView: View {
     @Environment(\.widgetRenderingMode) private var renderingMode
     let entry: ActivityEntry
 
-    private var layout: GridLayout { .forFamily(family) }
+    private var maxWeeks: Int { family == .systemMedium ? 16 : 7 }
 
     /// iOS 26's tinted/glass home screen mode replaces widget colors with
     /// a system-applied tint — fighting that with hardcoded black/white
@@ -81,45 +83,40 @@ struct DownfaceWidgetView: View {
         let weekdayOfToday = calendar.component(.weekday, from: today)
         let daysSinceMonday = (weekdayOfToday + 5) % 7
         let lastMonday = calendar.date(byAdding: .day, value: -daysSinceMonday, to: today) ?? today
-        let firstMonday = calendar.date(byAdding: .day, value: -(layout.weeks - 1) * 7, to: lastMonday) ?? lastMonday
+        let firstMonday = calendar.date(byAdding: .day, value: -(maxWeeks - 1) * 7, to: lastMonday) ?? lastMonday
 
-        return VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("DOWNFACE")
-                    .font(.system(size: 10, weight: .heavy, design: .rounded))
-                    .foregroundStyle(isFullColor ? .white.opacity(0.7) : .primary)
-                    .kerning(1.5)
-                Spacer()
-                Text("\(entry.snapshot.currentStreak)d")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(isFullColor ? .white : .primary)
-            }
-            .widgetAccentable(!isFullColor)
+        return GeometryReader { geo in
+            // Own proportional inset instead of the system's fixed iOS 17+
+            // container margin, so the grid's edge padding scales evenly
+            // with the widget's actual size rather than a flat constant
+            // that reads as too tight on systemSmall and too loose on
+            // systemMedium.
+            let inset = min(geo.size.width, geo.size.height) * 0.06
+            let contentSize = CGSize(width: geo.size.width - inset * 2, height: geo.size.height - inset * 2)
+            let grid = GridLayout.fitting(weeks: maxWeeks, in: contentSize)
+            // The visible weeks are always the most recent ones — if fewer
+            // weeks fit than maxWeeks, skip past the older ones instead of
+            // showing the oldest slice of the requested range.
+            let weekOffset = maxWeeks - grid.weeks
 
-            Spacer(minLength: 0)
-
-            HStack(spacing: layout.spacing) {
-                ForEach(0..<layout.weeks, id: \.self) { week in
-                    VStack(spacing: layout.spacing) {
-                        ForEach(0..<layout.daysPerWeek, id: \.self) { day in
-                            let date = calendar.date(byAdding: .day, value: week * layout.daysPerWeek + day, to: firstMonday) ?? firstMonday
+            HStack(spacing: grid.spacing) {
+                ForEach(0..<grid.weeks, id: \.self) { week in
+                    VStack(spacing: grid.spacing) {
+                        ForEach(0..<grid.daysPerWeek, id: \.self) { day in
+                            let date = calendar.date(byAdding: .day, value: (week + weekOffset) * grid.daysPerWeek + day, to: firstMonday) ?? firstMonday
                             let isFuture = date > today
                             let reps = entry.snapshot.reps(on: date)
 
-                            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                            RoundedRectangle(cornerRadius: grid.cellSize * 0.25, style: .continuous)
                                 .fill(isFuture ? Color.clear : intensity(for: reps))
-                                .frame(width: layout.cellSize, height: layout.cellSize)
+                                .frame(width: grid.cellSize, height: grid.cellSize)
                         }
                     }
                 }
             }
             .widgetAccentable(!isFullColor)
-            .frame(width: layout.gridWidth, height: layout.gridHeight, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: family == .systemMedium ? .trailing : .center)
-
-            Spacer(minLength: 0)
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .center)
         }
-        .padding(12)
         .containerBackground(for: .widget) {
             if isFullColor {
                 Color.black
@@ -138,6 +135,7 @@ struct DownfaceWidget: Widget {
         .configurationDisplayName("Downface Activity")
         .description("Your push-up streak, at a glance.")
         .supportedFamilies([.systemSmall, .systemMedium])
+        .contentMarginsDisabled()
     }
 }
 

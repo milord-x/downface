@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -7,36 +8,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'reminder_messages.dart';
+
 class RemindersService {
   static const _prefKey = 'reminders_enabled';
   static const _minutesKey = 'reminders_minutes';
   static const _legacyHoursKey = 'reminders_hours';
   static const _askedKey = 'reminders_asked';
   static const _baseNotificationId = 42;
+  static const _streakRiskNotificationId = 999;
 
-  static const _messages = [
-    ('One set is all it takes', 'Keep today from breaking your streak.'),
-    ('Still time today', 'A quick set now beats none at all.'),
-    ('Your streak is waiting', "Don't let today be the day it ends."),
-    ('Face down, streak up', 'One set, and today counts.'),
-    ('Quick reminder', "You haven't logged a set today yet."),
-    ('Two minutes is enough', 'Get one set in before the day ends.'),
-    ("Don't skip today", 'Your streak only grows if you show up.'),
-    ("Push-up o'clock", 'A short session keeps momentum going.'),
-    ('Keep the chain going', 'One more day, one more set.'),
-    ('Small effort, real progress', "Today's set is still open."),
-    ('Streak check', 'No workout logged yet today.'),
-    ('Consistency beats intensity', 'Just one set today.'),
-    ('Almost missed it', "There's still time for today's set."),
-    ('Show up for yourself', "One set. That's the whole ask."),
-    ('Your future self says thanks', 'Log a set before today ends.'),
-  ];
+  /// The Settings screen caps "Add another time" at this many configured
+  /// reminders — kept in sync here so cancellation covers every ID that
+  /// could ever have been scheduled.
+  static const maxReminderTimes = 4;
 
-  static const _urgentMessages = [
-    ('Your streak ends today', "You haven't done a set — don't lose it now."),
-    ('Last call', 'A few minutes left to keep your streak alive.'),
-    ("Don't let it slip", 'One quick set saves your whole streak today.'),
-  ];
+  /// The app's own locale picker doesn't exist — this mirrors whatever
+  /// language iOS itself is set to, same source Localizable.xcstrings uses.
+  /// Chinese needs the script subtag (zh-Hans, not just "zh") to match the
+  /// message table's keys, which follow Localizable.xcstrings' naming.
+  static String get _languageCode {
+    final locale = PlatformDispatcher.instance.locale;
+    if (locale.languageCode == 'zh') {
+      return locale.scriptCode == 'Hant' ? 'zh-Hant' : 'zh-Hans';
+    }
+    return locale.languageCode;
+  }
 
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
@@ -125,15 +122,19 @@ class RemindersService {
   }
 
   Future<void> _cancelAll() async {
+    // Wider than maxReminderTimes so a device that saved more times under
+    // an older version (before the 4-time cap) still gets every pending
+    // notification cleared, not just the first 4 slots.
     for (var i = 0; i < 12; i++) {
       await _plugin.cancel(_baseNotificationId + i);
     }
+    await _plugin.cancel(_streakRiskNotificationId);
   }
 
   Future<void> _scheduleAll({required List<int> minutesOfDay, required bool streakAtRisk}) async {
     await _cancelAll();
     final now = tz.TZDateTime.now(tz.local);
-    final pool = streakAtRisk ? _urgentMessages : _messages;
+    final pool = messagesFor(streakAtRisk ? urgentReminderMessages : dailyReminderMessages, _languageCode);
 
     for (var i = 0; i < minutesOfDay.length; i++) {
       final hour = minutesOfDay[i] ~/ 60;
@@ -152,6 +153,29 @@ class RemindersService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
     }
+
+    if (streakAtRisk) {
+      await _scheduleStreakLossWarning(now: now);
+    }
+  }
+
+  /// Schedules the one-off "you'll lose your streak" notification for
+  /// 23:00 local time today, independent of the user's configured reminder
+  /// times. Only called when a streak is actually at risk — see
+  /// [rescheduleIfEnabled].
+  Future<void> _scheduleStreakLossWarning({required tz.TZDateTime now}) async {
+    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, 23, 0);
+    if (scheduled.isBefore(now)) return;
+    final pool = messagesFor(streakLossReminderMessages, _languageCode);
+    final (title, body) = pool[Random().nextInt(pool.length)];
+    await _plugin.zonedSchedule(
+      _streakRiskNotificationId,
+      title,
+      body,
+      scheduled,
+      const NotificationDetails(iOS: DarwinNotificationDetails()),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
   }
 
   /// Reschedules pending reminders. If [doneToday] is true, today's
@@ -170,7 +194,8 @@ class RemindersService {
         final minute = configured[i] % 60;
         final scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute)
             .add(const Duration(days: 1));
-        final (title, body) = _messages[Random().nextInt(_messages.length)];
+        final pool = messagesFor(dailyReminderMessages, _languageCode);
+        final (title, body) = pool[Random().nextInt(pool.length)];
         await _plugin.zonedSchedule(
           _baseNotificationId + i,
           title,

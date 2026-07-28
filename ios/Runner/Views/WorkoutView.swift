@@ -245,56 +245,55 @@ private struct TrackingStateView: View {
     let onEndSet: () -> Void
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 8) {
-                Spacer()
+        VStack(spacing: 8) {
+            Spacer()
 
-                Text("\(reps)")
-                    .font(.system(size: 96, weight: .heavy, design: .rounded))
-                    .foregroundStyle(DFColor.textPrimary)
-                    .contentTransition(.numericText())
+            Text("\(reps)")
+                .font(.system(size: 96, weight: .heavy, design: .rounded))
+                .foregroundStyle(DFColor.textPrimary)
+                .contentTransition(.numericText())
 
-                Text("reps")
-                    .font(DFType.caption)
-                    .foregroundStyle(DFColor.textSecondary)
+            Text("reps")
+                .font(DFType.caption)
+                .foregroundStyle(DFColor.textSecondary)
 
-                Spacer()
+            Spacer()
 
-                GlassEffectContainer(spacing: 16) {
-                    Button {
-                        onEndSet()
-                    } label: {
-                        Text("end set")
-                            .font(DFType.body.weight(.bold))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                    }
-                    .buttonStyle(.glassProminent)
-                    .tint(.white)
-                    .foregroundStyle(.black)
-                    .glassEffectID("primary", in: namespace)
+            FatigueNotice(fatigued: fatigued)
+
+            GlassEffectContainer(spacing: 16) {
+                Button {
+                    onEndSet()
+                } label: {
+                    Text("end set")
+                        .font(DFType.body.weight(.bold))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
                 }
-                .padding(.horizontal, DFSpacing.screenPadding)
-                .padding(.bottom, 24)
+                .buttonStyle(.glassProminent)
+                .tint(.white)
+                .foregroundStyle(.black)
+                .glassEffectID("primary", in: namespace)
             }
-
-            if fatigued {
-                FatigueBadge()
-            }
+            .padding(.horizontal, DFSpacing.screenPadding)
+            .padding(.bottom, 24)
         }
+        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: fatigued)
     }
 }
 
-private struct FatigueBadge: View {
+/// Sits inline between the rep count and the "end set" button — never over
+/// another control — and reserves no space until fatigue actually
+/// triggers, at which point it grows in with the surrounding spring
+/// animation on `fatigued` (declared on the parent VStack) rather than a
+/// separate opacity/offset transition of its own. Once fatigue is flagged
+/// it stays visible for the rest of the set (RepCounter never clears it
+/// early), so this never flickers in and out — dismissing it is a single,
+/// deliberate action, not something that gets undone by the algorithm.
+private struct FatigueNotice: View {
+    let fatigued: Bool
+    @State private var dismissed = false
     @State private var message = Self.messages.randomElement() ?? Self.messages[0]
-    @State private var corner = Corner.allCases.randomElement() ?? .topTrailing
-    @State private var visible = true
-
-    private enum Corner: CaseIterable {
-        case topLeading, topTrailing
-
-        var alignment: Alignment { self == .topLeading ? .topLeading : .topTrailing }
-    }
 
     private static let messages = [
         NSLocalizedString("looking tired, take it easy", comment: ""),
@@ -310,27 +309,19 @@ private struct FatigueBadge: View {
     ]
 
     var body: some View {
-        GeometryReader { geo in
-            if visible {
-                Text(message)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(DFColor.textSecondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(DFColor.cardFillStrong, in: Capsule())
-                    .frame(maxWidth: geo.size.width, alignment: corner.alignment)
-                    .padding(.top, 12)
-                    .padding(.horizontal, DFSpacing.screenPadding)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-                    .onTapGesture { visible = false }
-                    .task {
-                        try? await Task.sleep(for: .seconds(4))
-                        visible = false
-                    }
-            }
+        if fatigued && !dismissed {
+            Text(message)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(DFColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(DFColor.cardFillStrong, in: Capsule())
+                .padding(.horizontal, DFSpacing.screenPadding)
+                .padding(.bottom, 16)
+                .onTapGesture { dismissed = true }
+                .transition(.scale(scale: 0.85).combined(with: .opacity))
         }
-        .animation(.smooth, value: visible)
-        .allowsHitTesting(true)
     }
 }
 
@@ -410,6 +401,8 @@ private struct FinishedStateView: View {
         return String(format: NSLocalizedString(key, comment: ""), sets)
     }
 
+    @State private var numberFrame: CGRect = .zero
+
     var body: some View {
         VStack(spacing: 8) {
             Spacer()
@@ -422,6 +415,12 @@ private struct FinishedStateView: View {
             Text(totalRepsText)
                 .font(DFType.number)
                 .foregroundStyle(DFColor.textPrimary)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .onAppear { numberFrame = geo.frame(in: .global) }
+                    }
+                )
 
             Text(setsLoggedText)
                 .font(DFType.caption)
@@ -431,6 +430,7 @@ private struct FinishedStateView: View {
 
             GlassEffectContainer(spacing: 16) {
                 Button {
+                    NativeUIBridge.shared.pendingRepsFlight = PendingRepsFlight(reps: totalReps, startFrame: numberFrame)
                     onDone()
                 } label: {
                     Text("done")
