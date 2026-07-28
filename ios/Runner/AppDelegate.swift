@@ -1,6 +1,7 @@
 import Combine
 import Flutter
 import UIKit
+import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -12,6 +13,16 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // flutter_local_notifications relies on FlutterAppDelegate's own
+    // didFinishLaunchingWithOptions to wire up
+    // UNUserNotificationCenter.current().delegate — since this app never
+    // calls super here (headless engine, no FlutterViewController), that
+    // wiring never happened and scheduled notifications silently never
+    // fired once the app was backgrounded or killed. Set it explicitly.
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self
+    }
+
     flutterEngine.run()
     GeneratedPluginRegistrant.register(with: flutterEngine)
 
