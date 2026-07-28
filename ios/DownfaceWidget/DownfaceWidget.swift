@@ -65,11 +65,14 @@ struct DownfaceWidgetView: View {
     var body: some View {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        let totalDays = layout.weeks * layout.daysPerWeek
-        let start = calendar.date(byAdding: .day, value: -(totalDays - 1), to: today) ?? today
-        let weekdayOfStart = calendar.component(.weekday, from: start)
-        let daysToMonday = (weekdayOfStart + 5) % 7
-        let firstMonday = calendar.date(byAdding: .day, value: -daysToMonday, to: start) ?? start
+        // Anchor on today's own week and step back full weeks — anchoring
+        // on the range start instead (then shifting it to its Monday)
+        // shrinks the range by that shift, so the last cell always landed
+        // a few days before today.
+        let weekdayOfToday = calendar.component(.weekday, from: today)
+        let daysSinceMonday = (weekdayOfToday + 5) % 7
+        let lastMonday = calendar.date(byAdding: .day, value: -daysSinceMonday, to: today) ?? today
+        let firstMonday = calendar.date(byAdding: .day, value: -(layout.weeks - 1) * 7, to: lastMonday) ?? lastMonday
 
         return ZStack {
             ContainerRelativeShape().fill(Color.black)
@@ -85,11 +88,6 @@ struct DownfaceWidgetView: View {
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                 }
-
-                // TEMPORARY diagnostic
-                Text("d:\(entry.snapshot.repsPerDay.count) t:\(entry.snapshot.reps(on: today))")
-                    .font(.system(size: 8, design: .monospaced))
-                    .foregroundStyle(.orange)
 
                 Spacer(minLength: 0)
 

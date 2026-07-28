@@ -67,36 +67,10 @@ struct StatsView: View {
                 .font(DFType.title)
                 .foregroundStyle(DFColor.textPrimary)
             ActivityGrid(snapshot: snapshot)
-            debugInfo
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
         .background(DFColor.cardFill, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-    }
-
-    // TEMPORARY diagnostic
-    private var debugInfo: some View {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let weeks = 20
-        let start = calendar.date(byAdding: .day, value: -(weeks * 7 - 1), to: today) ?? today
-        let weekdayOfStart = calendar.component(.weekday, from: start)
-        let daysToMonday = (weekdayOfStart + 5) % 7
-        let firstMonday = calendar.date(byAdding: .day, value: -daysToMonday, to: start) ?? start
-        let lastCellDate = calendar.date(byAdding: .day, value: weeks * 7 - 1, to: firstMonday) ?? firstMonday
-
-        let df = DateFormatter()
-        df.locale = Locale(identifier: "en_US_POSIX")
-        df.dateFormat = "yyyy-MM-dd"
-
-        let repsAtLastCell = snapshot.reps(on: lastCellDate)
-        let repsToday = snapshot.reps(on: today)
-        let allKeys = snapshot.repsPerDay.keys.sorted().joined(separator: ", ")
-
-        return Text("debug: today=\(df.string(from: today)) reps=\(repsToday) | lastCell=\(df.string(from: lastCellDate)) reps=\(repsAtLastCell) | keys=[\(allKeys)]")
-            .font(.system(size: 9, design: .monospaced))
-            .foregroundStyle(.orange)
-            .lineLimit(4)
     }
 }
 
@@ -156,10 +130,14 @@ private struct ActivityGrid: View {
     var body: some View {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        let start = calendar.date(byAdding: .day, value: -(weeks * 7 - 1), to: today) ?? today
-        let weekdayOfStart = calendar.component(.weekday, from: start)
-        let daysToMonday = (weekdayOfStart + 5) % 7
-        let firstMonday = calendar.date(byAdding: .day, value: -daysToMonday, to: start) ?? start
+        // Anchor the grid on today's own week, then step back full weeks —
+        // anchoring on the range *start* instead (and shifting it back to
+        // its Monday) shrinks the range by however many days that shift
+        // was, so the last cell always landed a few days before today.
+        let weekdayOfToday = calendar.component(.weekday, from: today)
+        let daysSinceMonday = (weekdayOfToday + 5) % 7
+        let lastMonday = calendar.date(byAdding: .day, value: -daysSinceMonday, to: today) ?? today
+        let firstMonday = calendar.date(byAdding: .day, value: -(weeks - 1) * 7, to: lastMonday) ?? lastMonday
 
         return VStack(alignment: .leading, spacing: 10) {
             ScrollView(.horizontal, showsIndicators: false) {
