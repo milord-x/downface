@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Flex contributors
+Copyright (c) 2026 Arslan Abdikul
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Trademark notice
+
+This license covers the source code only. It does not grant any right to
+use the "DownUp" name, wordmark, or app icon to identify a product, app
+store listing, or service. Forks and derivative builds must ship under a
+different name and icon.

@@ -67,6 +67,7 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showAddTime) {
                 addTimeSheet
+                    .preferredColorScheme(themeManager.theme.colorScheme)
             }
         }
     }
@@ -189,7 +190,7 @@ struct SettingsView: View {
 
             SparkleField()
 
-            Link(destination: URL(string: "https://patreon.com/downface")!) {
+            Link(destination: URL(string: "https://www.patreon.com/cw/Proxyare/membership")!) {
                 HStack(spacing: 14) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -201,7 +202,7 @@ struct SettingsView: View {
                     .frame(width: 48, height: 48)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Support Downface")
+                        Text("Support DownUp")
                             .font(DFType.body.weight(.bold))
                             .foregroundStyle(DFColor.textPrimary)
                         Text("Back the project on Patreon")
@@ -381,17 +382,17 @@ struct SettingsView: View {
     }
 
     private static let termsText = """
-    Downface is provided as-is, free of charge, with no warranty of any kind. \
+    DownUp is provided as-is, free of charge, with no warranty of any kind. \
     You use it at your own risk, including for any physical activity performed with it. \
     All workout data stays on your device unless you explicitly export it. \
     The source code is available under the MIT license \u{2014} see the GitHub repository for details.
     """
 
     private static let privacyText = """
-    Downface has no server, no analytics, and no account. \
+    DownUp has no server, no analytics, and no account. \
     Your camera is used only during an active set to track head movement, and no video or image ever leaves your device. \
     Workout history is stored locally in a SQLite database. \
-    Backups you export are encrypted and only readable by Downface itself. \
+    Backups you export are encrypted and only readable by DownUp itself. \
     Nothing is ever sent anywhere.
     """
 }

@@ -50,10 +50,18 @@ struct AppSnapshot: Codable {
         remindersAsked: true
     )
 
-    /// repsPerDay keys are midnight-local millisecond timestamps (as strings) for each active day.
+    private static let dayKeyFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = .current
+        return formatter
+    }()
+
+    /// repsPerDay keys are "yyyy-MM-dd" in local time — a plain calendar-day
+    /// string instead of a millisecond timestamp, so there's no floating
+    /// point precision to lose across the Dart -> JSON -> Swift round trip.
     func reps(on date: Date) -> Int {
-        let midnight = Calendar.current.startOfDay(for: date)
-        let key = String(Int(midnight.timeIntervalSince1970 * 1000))
+        let key = Self.dayKeyFormatter.string(from: date)
         return repsPerDay[key] ?? 0
     }
 

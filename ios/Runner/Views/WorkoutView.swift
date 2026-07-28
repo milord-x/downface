@@ -1,14 +1,22 @@
 import SwiftUI
+import UIKit
 
 struct WorkoutView: View {
     @ObservedObject var bridge = NativeUIBridge.shared
     @Environment(\.dismiss) private var dismiss
     @Namespace private var namespace
     @State private var showCancelConfirm = false
+    @State private var lightBoostOn = false
+    @State private var savedBrightness: CGFloat = Self.currentScreen?.brightness ?? 1.0
 
     var body: some View {
         ZStack(alignment: .topLeading) {
             DFColor.background.ignoresSafeArea()
+
+            if lightBoostOn {
+                FaceLightBoost()
+                    .transition(.opacity)
+            }
 
             switch bridge.workoutState {
             case .ready(let supported):
@@ -34,18 +42,27 @@ struct WorkoutView: View {
             }
 
             if !isFinishedState {
-                CloseButton {
-                    if isReadyState {
-                        dismiss()
-                    } else {
-                        showCancelConfirm = true
+                HStack {
+                    CloseButton {
+                        if isReadyState {
+                            dismiss()
+                        } else {
+                            showCancelConfirm = true
+                        }
+                    }
+
+                    Spacer()
+
+                    LightBoostButton(isOn: lightBoostOn) {
+                        toggleLightBoost()
                     }
                 }
                 .padding(.top, 8)
-                .padding(.leading, DFSpacing.screenPadding)
+                .padding(.horizontal, DFSpacing.screenPadding)
             }
         }
         .animation(.smooth, value: isTrackingState)
+        .animation(.smooth, value: lightBoostOn)
         .alert("Discard this workout?", isPresented: $showCancelConfirm) {
             Button("Keep going", role: .cancel) {}
             Button("Discard", role: .destructive) {
@@ -55,6 +72,28 @@ struct WorkoutView: View {
         } message: {
             Text("Your progress in this session won't be saved.")
         }
+        .onDisappear {
+            if lightBoostOn {
+                Self.currentScreen?.brightness = savedBrightness
+            }
+        }
+    }
+
+    /// UIScreen.main is deprecated in favor of reading the screen off the
+    /// active window scene.
+    private static var currentScreen: UIScreen? {
+        (UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene)?.screen
+    }
+
+    private func toggleLightBoost() {
+        guard let screen = Self.currentScreen else { return }
+        if lightBoostOn {
+            screen.brightness = savedBrightness
+        } else {
+            savedBrightness = screen.brightness
+            screen.brightness = 1.0
+        }
+        lightBoostOn.toggle()
     }
 
     private var isReadyState: Bool {
@@ -92,6 +131,67 @@ private struct CloseButton: View {
     }
 }
 
+private struct LightBoostButton: View {
+    let isOn: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: isOn ? "sun.max.fill" : "sun.max")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(isOn ? .black : DFColor.textPrimary)
+                .frame(width: 40, height: 40)
+        }
+        .buttonStyle(isOn ? .glassProminent : .glass)
+        .tint(isOn ? .white : nil)
+        .buttonBorderShape(.circle)
+    }
+}
+
+/// A soft white glow hugging every edge of the screen, standing in for a
+/// ring light so the TrueDepth camera's low-light face tracking has more
+/// to work with — brightest right at the border, fading to nothing a
+/// short distance in so it never washes out the UI in the center.
+private struct FaceLightBoost: View {
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                edgeGlow(edge: .top, size: geo.size)
+                edgeGlow(edge: .bottom, size: geo.size)
+                edgeGlow(edge: .leading, size: geo.size)
+                edgeGlow(edge: .trailing, size: geo.size)
+            }
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+    }
+
+    private func edgeGlow(edge: Edge, size: CGSize) -> some View {
+        let thickness: CGFloat = 120
+        let isVertical = edge == .top || edge == .bottom
+        let (startPoint, endPoint, alignment): (UnitPoint, UnitPoint, Alignment) = {
+            switch edge {
+            case .top: return (.top, .bottom, .top)
+            case .bottom: return (.bottom, .top, .bottom)
+            case .leading: return (.leading, .trailing, .leading)
+            case .trailing: return (.trailing, .leading, .trailing)
+            }
+        }()
+
+        return Rectangle()
+            .fill(LinearGradient(
+                colors: [.white.opacity(0.9), .white.opacity(0)],
+                startPoint: startPoint,
+                endPoint: endPoint
+            ))
+            .frame(
+                width: isVertical ? size.width : thickness,
+                height: isVertical ? thickness : size.height
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
+    }
+}
+
 private struct ReadyStateView: View {
     let supported: Bool
     let namespace: Namespace.ID
@@ -111,7 +211,7 @@ private struct ReadyStateView: View {
                     .font(DFType.title)
                     .foregroundStyle(DFColor.textPrimary)
 
-                Text("Downface tracks your head with the TrueDepth camera")
+                Text("DownUp tracks your head with the TrueDepth camera")
                     .multilineTextAlignment(.center)
                     .font(DFType.caption)
                     .foregroundStyle(DFColor.textSecondary)

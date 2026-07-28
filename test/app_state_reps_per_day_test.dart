@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:downface/core/app_state.dart';
 import 'package:downface/core/models/workout.dart';
@@ -41,5 +43,19 @@ void main() {
   test('repsPerDay is empty when there are no workouts', () {
     final appState = AppState();
     expect(appState.repsPerDay, isEmpty);
+  });
+
+  test('toSnapshotJson serializes repsPerDay with yyyy-MM-dd string keys, not raw timestamps', () {
+    final appState = AppState();
+    appState.workouts = [
+      _workout(DateTime(2026, 7, 27, 8, 0), 20),
+      _workout(DateTime(2026, 3, 5, 9, 0), 5),
+    ];
+
+    final decoded = jsonDecode(appState.toSnapshotJson()) as Map<String, dynamic>;
+    final repsPerDay = decoded['repsPerDay'] as Map<String, dynamic>;
+
+    expect(repsPerDay['2026-07-27'], 20);
+    expect(repsPerDay['2026-03-05'], 5);
   });
 }

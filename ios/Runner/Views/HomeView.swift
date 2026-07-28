@@ -65,10 +65,18 @@ struct HomeView: View {
         .onAppear {
             withAnimation(.smooth) { appeared = true }
         }
-        .sheet(isPresented: $showSettings) { SettingsView() }
-        .sheet(isPresented: $showStats) { StatsView() }
+        .preferredColorScheme(themeManager.theme.colorScheme)
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+                .preferredColorScheme(themeManager.theme.colorScheme)
+        }
+        .sheet(isPresented: $showStats) {
+            StatsView()
+                .preferredColorScheme(themeManager.theme.colorScheme)
+        }
         .fullScreenCover(isPresented: $showWorkout) {
             WorkoutView()
+                .preferredColorScheme(themeManager.theme.colorScheme)
                 .onAppear {
                     if case .finished = bridge.workoutState {
                         bridge.workoutState = .ready(supported: bridge.supported)
@@ -77,15 +85,16 @@ struct HomeView: View {
         }
         .fullScreenCover(isPresented: $showReminderOnboarding) {
             ReminderOnboardingView()
+                .preferredColorScheme(themeManager.theme.colorScheme)
         }
         .onChange(of: snapshot.remindersAsked, initial: true) { _, asked in
             showReminderOnboarding = !asked
         }
-        .preferredColorScheme(themeManager.theme.colorScheme)
     }
 
     private var header: some View {
         HStack {
+            BrandMark()
             Spacer()
             Button {
                 showSettings = true
@@ -128,6 +137,25 @@ struct HomeView: View {
                 .glassEffectID("stats", in: namespace)
             }
         }
+    }
+}
+
+/// The app wordmark in the top-left corner. Uses a slow, seamless
+/// breathing pulse (autoreverse, no easing snap at the loop point) so it
+/// reads as ambient life rather than a jarring blink.
+private struct BrandMark: View {
+    @State private var glowing = false
+
+    var body: some View {
+        Text(verbatim: "DownUp")
+            .font(.system(size: 15, weight: .heavy, design: .rounded))
+            .foregroundStyle(DFColor.textPrimary)
+            .opacity(glowing ? 1 : 0.45)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
+                    glowing = true
+                }
+            }
     }
 }
 

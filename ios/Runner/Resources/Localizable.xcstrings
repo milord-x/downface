@@ -639,60 +639,60 @@
         }
       }
     },
-    "DOWNFACE": {
+    "DOWNUP": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "DOWNFACE"
+            "value": "DOWNUP"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "DOWNFACE"
+            "value": "DOWNUP"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "DOWNFACE"
+            "value": "DOWNUP"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "DOWNFACE"
+            "value": "DOWNUP"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "DOWNFACE"
+            "value": "DOWNUP"
           }
         },
         "kk": {
           "stringUnit": {
             "state": "translated",
-            "value": "DOWNFACE"
+            "value": "DOWNUP"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "DOWNFACE"
+            "value": "DOWNUP"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "DOWNFACE"
+            "value": "DOWNUP"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "DOWNFACE"
+            "value": "DOWNUP"
           }
         }
       }
@@ -1045,176 +1045,176 @@
         }
       }
     },
-    "Downface can send you one gentle reminder a day if you haven't done a set yet. No spam, easy to turn off anytime.": {
+    "DownUp can send you one gentle reminder a day if you haven't done a set yet. No spam, easy to turn off anytime.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface kann dir einmal täglich eine sanfte Erinnerung schicken, falls du noch keinen Satz gemacht hast. Kein Spam, jederzeit abschaltbar."
+            "value": "DownUp kann dir einmal täglich eine sanfte Erinnerung schicken, falls du noch keinen Satz gemacht hast. Kein Spam, jederzeit abschaltbar."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface can send you one gentle reminder a day if you haven't done a set yet. No spam, easy to turn off anytime."
+            "value": "DownUp can send you one gentle reminder a day if you haven't done a set yet. No spam, easy to turn off anytime."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface puede enviarte un recordatorio suave al día si aún no has hecho una serie. Sin spam, fácil de desactivar cuando quieras."
+            "value": "DownUp puede enviarte un recordatorio suave al día si aún no has hecho una serie. Sin spam, fácil de desactivar cuando quieras."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface peut vous envoyer un rappel discret une fois par jour si vous n'avez pas encore fait de série. Pas de spam, désactivable à tout moment."
+            "value": "DownUp peut vous envoyer un rappel discret une fois par jour si vous n'avez pas encore fait de série. Pas de spam, désactivable à tout moment."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "その日にまだセットをしていない場合、Downfaceが1日1回やさしくお知らせします。スパムはなく、いつでもオフにできます。"
+            "value": "その日にまだセットをしていない場合、DownUpが1日1回やさしくお知らせします。スパムはなく、いつでもオフにできます。"
           }
         },
         "kk": {
           "stringUnit": {
             "state": "translated",
-            "value": "егер бүгін әлі жаттығу жасамасаң, Downface күніне бір рет жайлап еске салады. Спам жоқ, кез келген уақытта өшіруге болады."
+            "value": "егер бүгін әлі жаттығу жасамасаң, DownUp күніне бір рет жайлап еске салады. Спам жоқ, кез келген уақытта өшіруге болады."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "O Downface pode te enviar um lembrete suave por dia se você ainda não fez uma série. Sem spam, fácil de desativar quando quiser."
+            "value": "O DownUp pode te enviar um lembrete suave por dia se você ainda não fez uma série. Sem spam, fácil de desativar quando quiser."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface может напомнить один раз в день, если вы ещё не сделали подход. Без спама, можно отключить в любой момент."
+            "value": "DownUp может напомнить один раз в день, если вы ещё не сделали подход. Без спама, можно отключить в любой момент."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "如果你今天还没做训练，Downface 每天可以温和地提醒你一次。绝不打扰，随时可关闭。"
+            "value": "如果你今天还没做训练，DownUp 每天可以温和地提醒你一次。绝不打扰，随时可关闭。"
           }
         }
       }
     },
-    "Downface stats": {
+    "DownUp stats": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface-Statistik"
+            "value": "DownUp-Statistik"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface stats"
+            "value": "DownUp stats"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estadísticas de Downface"
+            "value": "Estadísticas de DownUp"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Statistiques Downface"
+            "value": "Statistiques DownUp"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface統計"
+            "value": "DownUp統計"
           }
         },
         "kk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface статистикасы"
+            "value": "DownUp статистикасы"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estatísticas do Downface"
+            "value": "Estatísticas do DownUp"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Статистика Downface"
+            "value": "Статистика DownUp"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface 统计"
+            "value": "DownUp 统计"
           }
         }
       }
     },
-    "Downface tracks your head with the TrueDepth camera": {
+    "DownUp tracks your head with the TrueDepth camera": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface verfolgt deinen Kopf mit der TrueDepth-Kamera"
+            "value": "DownUp verfolgt deinen Kopf mit der TrueDepth-Kamera"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface tracks your head with the TrueDepth camera"
+            "value": "DownUp tracks your head with the TrueDepth camera"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface rastrea tu cabeza con la cámara TrueDepth"
+            "value": "DownUp rastrea tu cabeza con la cámara TrueDepth"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface suit votre tête avec la caméra TrueDepth"
+            "value": "DownUp suit votre tête avec la caméra TrueDepth"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "DownfaceはTrueDepthカメラで頭の動きを追跡します"
+            "value": "DownUpはTrueDepthカメラで頭の動きを追跡します"
           }
         },
         "kk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface TrueDepth камерасы арқылы басыңды бақылайды"
+            "value": "DownUp TrueDepth камерасы арқылы басыңды бақылайды"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "O Downface rastreia sua cabeça com a câmera TrueDepth"
+            "value": "O DownUp rastreia sua cabeça com a câmera TrueDepth"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface отслеживает голову через TrueDepth-камеру"
+            "value": "DownUp отслеживает голову через TrueDepth-камеру"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface 通过 TrueDepth 摄像头追踪你的头部"
+            "value": "DownUp 通过 TrueDepth 摄像头追踪你的头部"
           }
         }
       }
@@ -1625,60 +1625,60 @@
         }
       }
     },
-    "My Downface stats": {
+    "My DownUp stats": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meine Downface-Statistik"
+            "value": "Meine DownUp-Statistik"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "My Downface stats"
+            "value": "My DownUp stats"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mis estadísticas de Downface"
+            "value": "Mis estadísticas de DownUp"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mes statistiques Downface"
+            "value": "Mes statistiques DownUp"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "私のDownface統計"
+            "value": "私のDownUp統計"
           }
         },
         "kk": {
           "stringUnit": {
             "state": "translated",
-            "value": "менің Downface статистикам"
+            "value": "менің DownUp статистикам"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Minhas estatísticas do Downface"
+            "value": "Minhas estatísticas do DownUp"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Моя статистика Downface"
+            "value": "Моя статистика DownUp"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "我的 Downface 统计"
+            "value": "我的 DownUp 统计"
           }
         }
       }
@@ -1973,60 +1973,60 @@
         }
       }
     },
-    "Support Downface": {
+    "Support DownUp": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface unterstützen"
+            "value": "DownUp unterstützen"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Support Downface"
+            "value": "Support DownUp"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apoyar Downface"
+            "value": "Apoyar DownUp"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Soutenir Downface"
+            "value": "Soutenir DownUp"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downfaceをサポート"
+            "value": "DownUpをサポート"
           }
         },
         "kk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downface қолдау"
+            "value": "DownUp қолдау"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apoiar o Downface"
+            "value": "Apoiar o DownUp"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Поддержать Downface"
+            "value": "Поддержать DownUp"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "支持 Downface"
+            "value": "支持 DownUp"
           }
         }
       }

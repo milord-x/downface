@@ -124,14 +124,7 @@ final class NativeUIBridge: ObservableObject {
     }
 
     private func updateWidgetData() {
-        var repsPerDay: [String: Int] = [:]
-        for (midnightMsKey, reps) in snapshot.repsPerDay {
-            guard let midnightMs = Double(midnightMsKey) else { continue }
-            let date = Date(timeIntervalSince1970: midnightMs / 1000)
-            let key = ActivitySnapshot.dayFormatter.string(from: date)
-            repsPerDay[key, default: 0] += reps
-        }
-        ActivitySnapshot.save(ActivitySnapshot(repsPerDay: repsPerDay, currentStreak: snapshot.streak.current))
+        ActivitySnapshot.save(ActivitySnapshot(repsPerDay: snapshot.repsPerDay, currentStreak: snapshot.streak.current))
         WidgetCenter.shared.reloadAllTimelines()
     }
 

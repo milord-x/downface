@@ -76,7 +76,7 @@ struct DownfaceWidgetView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("DOWNFACE")
+                    Text("DOWNUP")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
                         .foregroundStyle(.white.opacity(0.7))
                         .kerning(1.5)
@@ -121,7 +121,7 @@ struct DownfaceWidget: Widget {
             DownfaceWidgetView(entry: entry)
                 .containerBackground(.black, for: .widget)
         }
-        .configurationDisplayName("Downface Activity")
+        .configurationDisplayName("DownUp Activity")
         .description("Your push-up streak, at a glance.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }

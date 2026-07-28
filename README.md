@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/icon/app_icon.png" width="120" alt="Flex" />
+<img src="assets/icon/app_icon.png" width="120" alt="DownUp" />
 
-# FLEX
+# DOWNUP
 
 **push-ups, counted by your face.**
 
@@ -15,7 +15,7 @@ place the phone on the floor, get down, and go.
 
 ## how it works
 
-Flex never touches an accelerometer or a tap button to count a rep. Instead:
+DownUp never touches an accelerometer or a tap button to count a rep. Instead:
 
 1. you set the phone face-up on the floor
 2. the TrueDepth camera locks onto your face
@@ -42,9 +42,9 @@ Want to look at your own numbers instead of trusting a dashboard? The database i
 
 ## your data leaves only if you tell it to
 
-Flex doesn't have a server. There is no account, no sync, no analytics call fired off in the background. Everything lives in `flex.db` on your phone until you explicitly export it.
+DownUp doesn't have a server. There is no account, no sync, no analytics call fired off in the background. Everything lives in `downface.db` on your phone until you explicitly export it.
 
-Export produces a single `.flexbak` file: your full workout history, AES-256-GCM encrypted. That's not just for privacy — GCM's authentication tag means the app can tell if a single byte of that file changed after you exported it, whether by corruption or by hand. Import checks the tag before touching your database; if it doesn't match, nothing gets written and you get told the file was tampered with. Move the file to a new phone, import it there, done.
+Export produces a single `.dfbak` file: your full workout history, AES-256-GCM encrypted. That's not just for privacy — GCM's authentication tag means the app can tell if a single byte of that file changed after you exported it, whether by corruption or by hand. Import checks the tag before touching your database; if it doesn't match, nothing gets written and you get told the file was tampered with. Move the file to a new phone, import it there, done.
 
 ```
 lib/core/export/backup_codec.dart   — encode/decode + the tamper check
@@ -53,7 +53,24 @@ test/backup_codec_test.dart         — proves a flipped byte gets rejected
 
 ## design
 
-Built entirely on iOS 26's Liquid Glass language: translucent layers, backdrop blur, specular edges, no color beyond black and white. No screenshots here — the interface is the screenshot. Run it.
+Built entirely on iOS 26's Liquid Glass language: translucent layers, backdrop blur, specular edges, black and white with a user-selectable light/dark theme. No screenshots here — the interface is the screenshot. Run it.
+
+## architecture
+
+Flutter runs headless as the business-logic engine — no `FlutterViewController`, no Flutter widget ever reaches the screen. Every screen is native SwiftUI, talking to the Dart side over a `FlutterMethodChannel`. Dart owns the database, the streak math, the backup codec, and reminder scheduling; Swift owns ARKit face tracking, the UI, HealthKit, and the WidgetKit home-screen widget.
+
+```
+lib/
+  core/             app state, sqlite layer, streak math, backup codec, reminders
+  features/
+    workout/        the rep counter + the face-distance stream
+ios/Runner/
+  FaceTracker.swift        ARKit session, exposed to Dart over a platform channel
+  NativeUIBridge.swift     the Dart <-> SwiftUI bridge and app snapshot
+  Views/                   every screen: home, workout, stats, settings
+ios/DownfaceWidget/
+  DownfaceWidget.swift     the home-screen activity widget
+```
 
 ## running it
 
@@ -65,22 +82,8 @@ flutter run         # needs a physical iPhone with a TrueDepth camera; the simul
 
 TrueDepth means iPhone X or later. There's no fallback path for older hardware — the whole product is the face tracking, so we didn't build a worse version around a tap-to-count button.
 
-## structure
-
-```
-lib/
-  app/theme/       liquid glass primitives, colors, type scale
-  core/             models, sqlite layer, streak math, backup codec
-  features/
-    workout/        the rep counter + the camera session screen
-    home/            today's count, this week's strip
-    stats/           streak grid, per-rep and per-rest averages
-    share/           renders the stat card you actually share
-    settings/        reminders, export/import, wipe
-ios/Runner/
-  FaceTracker.swift  ARKit session, exposed to Dart over a platform channel
-```
-
 ## license
 
-MIT. See [LICENSE](LICENSE). Do whatever you want with it.
+MIT. See [LICENSE](LICENSE) — the code is free to use, fork, and build on.
+
+The "DownUp" name and app icon are not covered by that license. Forks and derivative builds should ship under their own name and icon.

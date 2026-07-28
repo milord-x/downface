@@ -23,10 +23,10 @@ struct ShareCardView: View {
                 if let cardFileURL {
                     ShareLink(
                         items: [cardFileURL],
-                        subject: Text("My Downface stats"),
-                        message: Text("\(snapshot.repsAllTime) push-ups tracked with Downface \u{2014} the offline push-up counter that watches your face, not a sensor."),
+                        subject: Text("My DownUp stats"),
+                        message: Text("\(snapshot.repsAllTime) push-ups tracked with DownUp \u{2014} the offline push-up counter that watches your face, not a sensor."),
                         preview: { url in
-                            SharePreview("Downface stats", image: Image(uiImage: UIImage(contentsOfFile: url.path) ?? UIImage()))
+                            SharePreview("DownUp stats", image: Image(uiImage: UIImage(contentsOfFile: url.path) ?? UIImage()))
                         }
                     ) {
                         Text("share")
@@ -71,7 +71,7 @@ private struct StatCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("DOWNFACE")
+            Text("DOWNUP")
                 .font(.system(size: 22, weight: .heavy, design: .rounded))
                 .foregroundStyle(.white)
                 .kerning(2)

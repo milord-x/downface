@@ -85,6 +85,16 @@ class AppState extends ChangeNotifier {
 
   int get repsAllTime => workouts.fold(0, (sum, w) => sum + w.totalReps);
 
+  /// yyyy-MM-dd in local time, matching the widget's day-key format —
+  /// avoids any floating-point precision mismatch that a millisecond
+  /// timestamp key would risk across the Dart/Swift JSON round trip.
+  String _dayKey(DateTime day) {
+    final y = day.year.toString().padLeft(4, '0');
+    final m = day.month.toString().padLeft(2, '0');
+    final d = day.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
+
   String toSnapshotJson() {
     final now = DateTime.now();
     final weekStart = now.subtract(Duration(days: now.weekday - 1));
@@ -119,7 +129,7 @@ class AppState extends ChangeNotifier {
       'activeDayTimestamps':
           activeDays.map((d) => d.millisecondsSinceEpoch.toDouble()).toList(),
       'repsPerDay': repsPerDay.map(
-        (day, reps) => MapEntry(day.millisecondsSinceEpoch.toString(), reps),
+        (day, reps) => MapEntry(_dayKey(day), reps),
       ),
       'remindersEnabled': remindersEnabled,
       'reminderMinutes': reminderMinutes,
