@@ -67,10 +67,22 @@ struct StatsView: View {
                 .font(DFType.title)
                 .foregroundStyle(DFColor.textPrimary)
             ActivityGrid(snapshot: snapshot)
+            debugInfo
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
         .background(DFColor.cardFill, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+    }
+
+    // TEMPORARY diagnostic
+    private var debugInfo: some View {
+        let today = Date()
+        let repsToday = snapshot.reps(on: today)
+        let allKeys = snapshot.repsPerDay.keys.sorted().joined(separator: ", ")
+        return Text("debug: reps(on: today)=\(repsToday), keys=[\(allKeys)]")
+            .font(.system(size: 9, design: .monospaced))
+            .foregroundStyle(.orange)
+            .lineLimit(3)
     }
 }
 
