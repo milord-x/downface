@@ -22,30 +22,50 @@ struct ActivityProvider: TimelineProvider {
     }
 }
 
+/// Grid geometry, hand-tuned per widget family against the standard iOS
+/// system widget content-area sizes (small 155x155pt, medium 329x155pt)
+/// so cells and gaps line up pixel-perfectly instead of being derived from
+/// GeometryReader at render time.
+private struct GridLayout {
+    let weeks: Int
+    let daysPerWeek = 7
+    let cellSize: CGFloat
+    let spacing: CGFloat
+
+    static let small = GridLayout(weeks: 7, cellSize: 12, spacing: 2.5)
+    static let medium = GridLayout(weeks: 16, cellSize: 12, spacing: 2.5)
+
+    static func forFamily(_ family: WidgetFamily) -> GridLayout {
+        family == .systemMedium ? .medium : .small
+    }
+
+    var gridWidth: CGFloat { CGFloat(weeks) * cellSize + CGFloat(weeks - 1) * spacing }
+    var gridHeight: CGFloat { CGFloat(daysPerWeek) * cellSize + CGFloat(daysPerWeek - 1) * spacing }
+}
+
 struct DownfaceWidgetView: View {
     @Environment(\.widgetFamily) private var family
     let entry: ActivityEntry
 
-    private let daysPerWeek = 7
-
-    private var weeks: Int {
-        family == .systemMedium ? 15 : 7
-    }
+    private var layout: GridLayout { .forFamily(family) }
 
     private var maxReps: Int {
         entry.snapshot.repsPerDay.values.max() ?? 1
     }
 
+    /// Linear intensity scale from a dim baseline (no activity) up to full
+    /// white for the day with the most reps in the visible window, so a
+    /// 40-rep day always reads brighter than a 20-rep day.
     private func intensity(for reps: Int) -> Color {
         guard reps > 0 else { return Color.white.opacity(0.08) }
         let ratio = Double(reps) / Double(max(maxReps, 1))
-        return Color.white.opacity(0.25 + ratio * 0.75)
+        return Color.white.opacity(0.22 + ratio * 0.78)
     }
 
     var body: some View {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        let totalDays = weeks * daysPerWeek
+        let totalDays = layout.weeks * layout.daysPerWeek
         let start = calendar.date(byAdding: .day, value: -(totalDays - 1), to: today) ?? today
         let weekdayOfStart = calendar.component(.weekday, from: start)
         let daysToMonday = (weekdayOfStart + 5) % 7
@@ -54,7 +74,7 @@ struct DownfaceWidgetView: View {
         return ZStack {
             ContainerRelativeShape().fill(Color.black)
 
-            VStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("DOWNFACE")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
@@ -66,30 +86,27 @@ struct DownfaceWidgetView: View {
                         .foregroundStyle(.white)
                 }
 
-                GeometryReader { geo in
-                    let spacing: CGFloat = 3
-                    let widthPerCell = (geo.size.width - spacing * CGFloat(weeks - 1)) / CGFloat(weeks)
-                    let heightPerCell = (geo.size.height - spacing * CGFloat(daysPerWeek - 1)) / CGFloat(daysPerWeek)
-                    let cellSize = min(widthPerCell, heightPerCell)
+                Spacer(minLength: 0)
 
-                    HStack(spacing: spacing) {
-                        Spacer(minLength: 0)
-                        ForEach(0..<weeks, id: \.self) { week in
-                            VStack(spacing: spacing) {
-                                ForEach(0..<daysPerWeek, id: \.self) { day in
-                                    let date = calendar.date(byAdding: .day, value: week * daysPerWeek + day, to: firstMonday) ?? firstMonday
-                                    let isFuture = date > today
-                                    let reps = entry.snapshot.reps(on: date)
+                HStack(spacing: layout.spacing) {
+                    ForEach(0..<layout.weeks, id: \.self) { week in
+                        VStack(spacing: layout.spacing) {
+                            ForEach(0..<layout.daysPerWeek, id: \.self) { day in
+                                let date = calendar.date(byAdding: .day, value: week * layout.daysPerWeek + day, to: firstMonday) ?? firstMonday
+                                let isFuture = date > today
+                                let reps = entry.snapshot.reps(on: date)
 
-                                    RoundedRectangle(cornerRadius: 2.5)
-                                        .fill(isFuture ? Color.clear : intensity(for: reps))
-                                        .frame(width: cellSize, height: cellSize)
-                                }
+                                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                                    .fill(isFuture ? Color.clear : intensity(for: reps))
+                                    .frame(width: layout.cellSize, height: layout.cellSize)
                             }
                         }
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
+                .frame(width: layout.gridWidth, height: layout.gridHeight, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: family == .systemMedium ? .trailing : .center)
+
+                Spacer(minLength: 0)
             }
             .padding(12)
         }
