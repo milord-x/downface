@@ -106,8 +106,16 @@ struct DownfaceWidgetView: View {
                             let date = calendar.date(byAdding: .day, value: (week + weekOffset) * grid.daysPerWeek + day, to: firstMonday) ?? firstMonday
                             let isFuture = date > today
                             let reps = entry.snapshot.reps(on: date)
+                            // The four cells at the grid's outer corners sit
+                            // right up against the widget's own much larger
+                            // corner radius — the same gentle cell rounding
+                            // used everywhere else reads as an abrupt, sharp
+                            // notch there, so those four corners round out
+                            // further to echo the widget's own curve.
+                            let isCorner = (week == 0 || week == grid.weeks - 1) && (day == 0 || day == grid.daysPerWeek - 1)
+                            let cornerRadius = grid.cellSize * (isCorner ? 0.55 : 0.25)
 
-                            RoundedRectangle(cornerRadius: grid.cellSize * 0.25, style: .continuous)
+                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                                 .fill(isFuture ? Color.clear : intensity(for: reps))
                                 .frame(width: grid.cellSize, height: grid.cellSize)
                         }
