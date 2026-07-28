@@ -154,47 +154,34 @@ private struct LightBoostButton: View {
     }
 }
 
-/// A soft white glow hugging every edge of the screen, standing in for a
-/// ring light so the TrueDepth camera's low-light face tracking has more
-/// to work with — brightest right at the border, fading to nothing a
+/// A soft white glow hugging the screen's own rounded-corner contour,
+/// standing in for a ring light so the TrueDepth camera's low-light face
+/// tracking has more to work with. A single stroked, blurred outline
+/// follows the screen shape continuously — no seams at the corners, no
+/// flat rectangle cutting across a rounded display — fading to nothing a
 /// short distance in so it never washes out the UI in the center.
 private struct FaceLightBoost: View {
     var body: some View {
         GeometryReader { geo in
+            let shape = RoundedRectangle(cornerRadius: 55, style: .continuous)
+
             ZStack {
-                edgeGlow(edge: .top, size: geo.size)
-                edgeGlow(edge: .bottom, size: geo.size)
-                edgeGlow(edge: .leading, size: geo.size)
-                edgeGlow(edge: .trailing, size: geo.size)
+                shape
+                    .stroke(Color.white, lineWidth: 90)
+                    .blur(radius: 40)
+                    .opacity(0.85)
+
+                shape
+                    .stroke(Color.white, lineWidth: 30)
+                    .blur(radius: 16)
+                    .opacity(0.6)
             }
+            .frame(width: geo.size.width, height: geo.size.height)
+            .compositingGroup()
+            .clipShape(shape)
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
-    }
-
-    private func edgeGlow(edge: Edge, size: CGSize) -> some View {
-        let thickness: CGFloat = 120
-        let isVertical = edge == .top || edge == .bottom
-        let (startPoint, endPoint, alignment): (UnitPoint, UnitPoint, Alignment) = {
-            switch edge {
-            case .top: return (.top, .bottom, .top)
-            case .bottom: return (.bottom, .top, .bottom)
-            case .leading: return (.leading, .trailing, .leading)
-            case .trailing: return (.trailing, .leading, .trailing)
-            }
-        }()
-
-        return Rectangle()
-            .fill(LinearGradient(
-                colors: [.white.opacity(0.9), .white.opacity(0)],
-                startPoint: startPoint,
-                endPoint: endPoint
-            ))
-            .frame(
-                width: isVertical ? size.width : thickness,
-                height: isVertical ? thickness : size.height
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
     }
 }
 
