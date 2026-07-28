@@ -67,21 +67,10 @@ struct StatsView: View {
                 .font(DFType.title)
                 .foregroundStyle(DFColor.textPrimary)
             ActivityGrid(snapshot: snapshot)
-            debugRepsPerDayInfo
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
         .background(DFColor.cardFill, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-    }
-
-    // TEMPORARY diagnostic — remove once the grid is confirmed lit up on device.
-    private var debugRepsPerDayInfo: some View {
-        let entries = snapshot.repsPerDay
-        let sample = entries.first.map { "\($0.key)=\($0.value)" } ?? "none"
-        return Text("debug: \(entries.count) day(s) in repsPerDay, sample: \(sample), workouts: \(snapshot.workouts.count)")
-            .font(.system(size: 10, design: .monospaced))
-            .foregroundStyle(.orange)
-            .lineLimit(2)
     }
 }
 

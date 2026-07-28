@@ -52,6 +52,12 @@ struct AppSnapshot: Codable {
 
     private static let dayKeyFormatter: DateFormatter = {
         let formatter = DateFormatter()
+        // en_US_POSIX pins the calendar to Gregorian regardless of the
+        // device's locale — without it, non-Gregorian locales (e.g. some
+        // Arabic or Asian locales) can make a fixed "yyyy-MM-dd" pattern
+        // resolve to the wrong calendar system and silently mis-key every
+        // lookup. See Apple QA1480.
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = .current
         return formatter
