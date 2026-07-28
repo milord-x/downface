@@ -147,7 +147,7 @@ private struct BrandMark: View {
     @State private var glowing = false
 
     var body: some View {
-        Text(verbatim: "DownUp")
+        Text(verbatim: "Downface")
             .font(.system(size: 15, weight: .heavy, design: .rounded))
             .foregroundStyle(DFColor.textPrimary)
             .opacity(glowing ? 1 : 0.45)

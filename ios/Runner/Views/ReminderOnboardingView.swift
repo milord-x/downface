@@ -23,7 +23,7 @@ struct ReminderOnboardingView: View {
                     .font(DFType.title)
                     .foregroundStyle(DFColor.textPrimary)
 
-                Text("DownUp can send you one gentle reminder a day if you haven't done a set yet. No spam, easy to turn off anytime.")
+                Text("Downface can send you one gentle reminder a day if you haven't done a set yet. No spam, easy to turn off anytime.")
                     .multilineTextAlignment(.center)
                     .font(DFType.caption)
                     .foregroundStyle(DFColor.textSecondary)

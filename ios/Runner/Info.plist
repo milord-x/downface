@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>DownUp</string>
+	<string>Downface</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -35,15 +35,15 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>DownUp uses the TrueDepth camera to track your head movement and count push-ups automatically.</string>
+	<string>Downface uses the TrueDepth camera to track your head movement and count push-ups automatically.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>DownUp needs access to your photo library to save and share your workout stats.</string>
+	<string>Downface needs access to your photo library to save and share your workout stats.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>DownUp needs access to save your workout stats image to your photo library.</string>
+	<string>Downface needs access to save your workout stats image to your photo library.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>DownUp can add your push-up workouts to Apple Health so they show up alongside your other activity.</string>
+	<string>Downface can add your push-up workouts to Apple Health so they show up alongside your other activity.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>DownUp does not read any data from Apple Health, only writes your push-up workouts to it.</string>
+	<string>Downface does not read any data from Apple Health, only writes your push-up workouts to it.</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>

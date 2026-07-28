@@ -202,7 +202,7 @@ struct SettingsView: View {
                     .frame(width: 48, height: 48)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Support DownUp")
+                        Text("Support Downface")
                             .font(DFType.body.weight(.bold))
                             .foregroundStyle(DFColor.textPrimary)
                         Text("Back the project on Patreon")
@@ -382,17 +382,17 @@ struct SettingsView: View {
     }
 
     private static let termsText = """
-    DownUp is provided as-is, free of charge, with no warranty of any kind. \
+    Downface is provided as-is, free of charge, with no warranty of any kind. \
     You use it at your own risk, including for any physical activity performed with it. \
     All workout data stays on your device unless you explicitly export it. \
     The source code is available under the MIT license \u{2014} see the GitHub repository for details.
     """
 
     private static let privacyText = """
-    DownUp has no server, no analytics, and no account. \
+    Downface has no server, no analytics, and no account. \
     Your camera is used only during an active set to track head movement, and no video or image ever leaves your device. \
     Workout history is stored locally in a SQLite database. \
-    Backups you export are encrypted and only readable by DownUp itself. \
+    Backups you export are encrypted and only readable by Downface itself. \
     Nothing is ever sent anywhere.
     """
 }

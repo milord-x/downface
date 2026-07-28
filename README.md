@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/icon/app_icon.png" width="120" alt="DownUp" />
+<img src="assets/icon/app_icon.png" width="120" alt="Downface" />
 
-# DOWNUP
+# DOWNFACE
 
 **push-ups, counted by your face.**
 
@@ -15,7 +15,7 @@ place the phone on the floor, get down, and go.
 
 ## how it works
 
-DownUp never touches an accelerometer or a tap button to count a rep. Instead:
+Downface never touches an accelerometer or a tap button to count a rep. Instead:
 
 1. you set the phone face-up on the floor
 2. the TrueDepth camera locks onto your face
@@ -42,7 +42,7 @@ Want to look at your own numbers instead of trusting a dashboard? The database i
 
 ## your data leaves only if you tell it to
 
-DownUp doesn't have a server. There is no account, no sync, no analytics call fired off in the background. Everything lives in `downface.db` on your phone until you explicitly export it.
+Downface doesn't have a server. There is no account, no sync, no analytics call fired off in the background. Everything lives in `downface.db` on your phone until you explicitly export it.
 
 Export produces a single `.dfbak` file: your full workout history, AES-256-GCM encrypted. That's not just for privacy — GCM's authentication tag means the app can tell if a single byte of that file changed after you exported it, whether by corruption or by hand. Import checks the tag before touching your database; if it doesn't match, nothing gets written and you get told the file was tampered with. Move the file to a new phone, import it there, done.
 
@@ -86,4 +86,4 @@ TrueDepth means iPhone X or later. There's no fallback path for older hardware �
 
 MIT. See [LICENSE](LICENSE) — the code is free to use, fork, and build on.
 
-The "DownUp" name and app icon are not covered by that license. Forks and derivative builds should ship under their own name and icon.
+The "Downface" name and app icon are not covered by that license. Forks and derivative builds should ship under their own name and icon.

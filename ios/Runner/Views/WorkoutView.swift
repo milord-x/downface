@@ -217,7 +217,7 @@ private struct ReadyStateView: View {
                     .font(DFType.title)
                     .foregroundStyle(DFColor.textPrimary)
 
-                Text("DownUp tracks your head with the TrueDepth camera")
+                Text("Downface tracks your head with the TrueDepth camera")
                     .multilineTextAlignment(.center)
                     .font(DFType.caption)
                     .foregroundStyle(DFColor.textSecondary)
