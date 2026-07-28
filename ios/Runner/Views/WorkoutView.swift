@@ -401,8 +401,6 @@ private struct FinishedStateView: View {
         return String(format: NSLocalizedString(key, comment: ""), sets)
     }
 
-    @State private var numberFrame: CGRect = .zero
-
     var body: some View {
         VStack(spacing: 8) {
             Spacer()
@@ -415,12 +413,6 @@ private struct FinishedStateView: View {
             Text(totalRepsText)
                 .font(DFType.number)
                 .foregroundStyle(DFColor.textPrimary)
-                .background(
-                    GeometryReader { geo in
-                        Color.clear
-                            .onAppear { numberFrame = geo.frame(in: .global) }
-                    }
-                )
 
             Text(setsLoggedText)
                 .font(DFType.caption)
@@ -430,7 +422,7 @@ private struct FinishedStateView: View {
 
             GlassEffectContainer(spacing: 16) {
                 Button {
-                    NativeUIBridge.shared.pendingRepsFlight = PendingRepsFlight(reps: totalReps, startFrame: numberFrame)
+                    NativeUIBridge.shared.pendingRepsFlight = PendingRepsFlight(reps: totalReps)
                     onDone()
                 } label: {
                     Text("done")

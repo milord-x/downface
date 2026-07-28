@@ -1,5 +1,10 @@
 import SwiftUI
 
+/// Shared coordinate space name for the today-card-circle-position
+/// preference below, so both HomeView (reading it) and TodayCard
+/// (publishing it) agree on the same reference frame.
+private let homeCoordinateSpace = "homeSpace"
+
 struct HomeView: View {
     @ObservedObject var bridge = NativeUIBridge.shared
     @ObservedObject private var themeManager = ThemeManager.shared
@@ -44,46 +49,56 @@ struct HomeView: View {
     }
 
     var body: some View {
-        ZStack {
-            DFColor.background.ignoresSafeArea()
+        GeometryReader { rootGeo in
+            ZStack {
+                DFColor.background.ignoresSafeArea()
 
-            VStack(spacing: DFSpacing.stackGap) {
-                header
+                VStack(spacing: DFSpacing.stackGap) {
+                    header
 
-                TodayCard(reps: repsToday)
+                    TodayCard(reps: repsToday)
+                        .opacity(appeared ? 1 : 0)
+                        .offset(y: appeared ? 0 : 8)
+
+                    PeriodStatsRow(
+                        week: repsThisWeek,
+                        month: repsThisMonth,
+                        allTime: repsAllTime
+                    )
                     .opacity(appeared ? 1 : 0)
                     .offset(y: appeared ? 0 : 8)
+                    .animation(.smooth.delay(0.05), value: appeared)
 
-                PeriodStatsRow(
-                    week: repsThisWeek,
-                    month: repsThisMonth,
-                    allTime: repsAllTime
-                )
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 8)
-                .animation(.smooth.delay(0.05), value: appeared)
+                    WeekStreakCard(
+                        streak: streakCurrent,
+                        completedWeekdays: weekdayCompleted
+                    )
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 8)
+                    .animation(.smooth.delay(0.1), value: appeared)
 
-                WeekStreakCard(
-                    streak: streakCurrent,
-                    completedWeekdays: weekdayCompleted
-                )
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 8)
-                .animation(.smooth.delay(0.1), value: appeared)
+                    Spacer()
 
-                Spacer()
+                    actionBar
+                }
+                .padding(.horizontal, DFSpacing.screenPadding)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
 
-                actionBar
+                if let flight, todayCardFrame != .zero {
+                    // The finished-workout screen and this one are separate
+                    // presentation layers, so there's no reliable shared
+                    // coordinate space to read its number's exact position
+                    // from — instead, start from where that number visually
+                    // sits on that screen: roughly centered, a bit above the
+                    // middle, same layout rhythm (two spacers around it).
+                    let start = CGPoint(x: rootGeo.size.width / 2, y: rootGeo.size.height * 0.42)
+                    FlyingRepsNumber(reps: flight.reps, from: start, to: CGPoint(x: todayCardFrame.midX, y: todayCardFrame.midY), progress: flightProgress)
+                }
             }
-            .padding(.horizontal, DFSpacing.screenPadding)
-            .padding(.top, 8)
-            .padding(.bottom, 16)
-
-            if let flight {
-                FlyingRepsNumber(reps: flight.reps, from: flight.startFrame, to: todayCardFrame, progress: flightProgress)
-            }
+            .coordinateSpace(name: homeCoordinateSpace)
+            .onPreferenceChange(TodayCardCirclePreferenceKey.self) { todayCardFrame = $0 }
         }
-        .onPreferenceChange(TodayCardCirclePreferenceKey.self) { todayCardFrame = $0 }
         .onAppear {
             withAnimation(.smooth) { appeared = true }
         }
@@ -219,16 +234,14 @@ private struct FrozenStats {
 /// already living there rather than just teleporting between two states.
 private struct FlyingRepsNumber: View {
     let reps: Int
-    let from: CGRect
-    let to: CGRect
+    let from: CGPoint
+    let to: CGPoint
     let progress: CGFloat
 
-    private var currentFrame: CGRect {
-        CGRect(
-            x: from.minX + (to.midX - from.midX) * progress,
-            y: from.minY + (to.midY - from.midY) * progress,
-            width: from.width,
-            height: from.height
+    private var currentCenter: CGPoint {
+        CGPoint(
+            x: from.x + (to.x - from.x) * progress,
+            y: from.y + (to.y - from.y) * progress
         )
     }
 
@@ -243,7 +256,7 @@ private struct FlyingRepsNumber: View {
             .foregroundStyle(DFColor.textPrimary)
             .scaleEffect(scale)
             .opacity(1 - progress * 0.3)
-            .position(x: currentFrame.midX, y: currentFrame.midY)
+            .position(currentCenter)
             .allowsHitTesting(false)
     }
 }
@@ -291,7 +304,7 @@ private struct TodayCard: View {
                 .frame(width: 56, height: 56)
                 .background(
                     GeometryReader { geo in
-                        Color.clear.preference(key: TodayCardCirclePreferenceKey.self, value: geo.frame(in: .global))
+                        Color.clear.preference(key: TodayCardCirclePreferenceKey.self, value: geo.frame(in: .named(homeCoordinateSpace)))
                     }
                 )
 

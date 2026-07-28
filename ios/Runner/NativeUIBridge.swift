@@ -15,10 +15,9 @@ final class NativeUIBridge: ObservableObject {
     @Published var healthSyncEnabled: Bool = UserDefaults.standard.bool(forKey: NativeUIBridge.healthSyncKey)
 
     /// Set once, right when the user taps "done" on the finished-workout
-    /// screen, carrying the rep count and its on-screen position so
-    /// HomeView can fly a copy of that number from there into the
-    /// "push-ups today" card as the workout sheet dismisses. HomeView
-    /// clears it once the flight animation completes.
+    /// screen, carrying the rep count so HomeView can fly a copy of that
+    /// number into the "push-ups today" card as the workout sheet
+    /// dismisses. HomeView clears it once the flight animation completes.
     @Published var pendingRepsFlight: PendingRepsFlight?
 
     private var channel: FlutterMethodChannel?
@@ -161,5 +160,4 @@ enum WorkoutUIState {
 
 struct PendingRepsFlight: Equatable {
     let reps: Int
-    let startFrame: CGRect
 }
