@@ -11,7 +11,7 @@ struct ReminderOnboardingView: View {
 
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.08))
+                    .fill(DFColor.cardFillStrong)
                     .frame(width: 96, height: 96)
                 Image(systemName: "bell.badge.fill")
                     .font(.system(size: 36))

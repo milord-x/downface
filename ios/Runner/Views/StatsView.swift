@@ -70,7 +70,7 @@ struct StatsView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .background(DFColor.cardFill, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 }
 
@@ -106,7 +106,7 @@ private struct MetricCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(DFColor.cardFill, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 }
 
@@ -122,7 +122,7 @@ private struct ActivityGrid: View {
     }
 
     private func intensity(for reps: Int) -> Color {
-        guard reps > 0 else { return Color.white.opacity(0.08) }
+        guard reps > 0 else { return DFColor.cardFillStrong }
         let ratio = Double(reps) / Double(maxReps)
         return DFColor.textPrimary.opacity(0.35 + ratio * 0.65)
     }
@@ -193,7 +193,7 @@ private struct ActivityGrid: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(DFColor.cardFillStrong, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .transition(.opacity.combined(with: .move(edge: .top)))
         .animation(.smooth, value: date)
     }

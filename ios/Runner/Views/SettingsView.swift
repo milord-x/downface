@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var bridge = NativeUIBridge.shared
+    @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showWipeConfirm = false
     @State private var statusMessage: LocalizedStringKey?
@@ -19,6 +20,7 @@ struct SettingsView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
+                    appearanceCard
                     remindersCard
                     supportCard
                     groupedCard {
@@ -66,6 +68,29 @@ struct SettingsView: View {
             .sheet(isPresented: $showAddTime) {
                 addTimeSheet
             }
+        }
+    }
+
+    // MARK: - Appearance
+
+    private var appearanceCard: some View {
+        groupedCard {
+            HStack {
+                settingsIcon(themeManager.theme == .dark ? "moon.fill" : "sun.max.fill", tint: .gray)
+                Text("Appearance")
+                    .foregroundStyle(DFColor.textPrimary)
+                Spacer()
+                Picker("", selection: Binding(
+                    get: { themeManager.theme },
+                    set: { themeManager.theme = $0 }
+                )) {
+                    Text("Dark").tag(AppTheme.dark)
+                    Text("Light").tag(AppTheme.light)
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+            }
+            .padding(.vertical, 4)
         }
     }
 
@@ -160,7 +185,7 @@ struct SettingsView: View {
     private var supportCard: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(Color.white.opacity(0.06))
+                .fill(DFColor.cardFill)
 
             SparkleField()
 
@@ -280,7 +305,7 @@ struct SettingsView: View {
             .padding(DFSpacing.cardPadding)
             .background(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(Color.white.opacity(0.06))
+                    .fill(DFColor.cardFill)
                     .overlay(
                         RoundedRectangle(cornerRadius: 28, style: .continuous)
                             .stroke(.red.opacity(0.3), lineWidth: 1)
@@ -346,7 +371,7 @@ struct SettingsView: View {
             content()
         }
         .padding(DFSpacing.cardPadding)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .background(DFColor.cardFill, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
     private static var appVersion: String {

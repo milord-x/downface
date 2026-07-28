@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @ObservedObject var bridge = NativeUIBridge.shared
+    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var showSettings = false
     @State private var showStats = false
     @State private var showWorkout = false
@@ -80,6 +81,7 @@ struct HomeView: View {
         .onChange(of: snapshot.remindersAsked, initial: true) { _, asked in
             showReminderOnboarding = !asked
         }
+        .preferredColorScheme(themeManager.theme.colorScheme)
     }
 
     private var header: some View {
@@ -139,7 +141,7 @@ private struct TodayCard: View {
                     Circle().fill(DFColor.textPrimary)
                     Text("\(reps)")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(.black)
+                        .foregroundStyle(DFColor.background)
                         .contentTransition(.numericText())
                         .animation(.smooth, value: reps)
                 }
@@ -220,11 +222,11 @@ private struct WeekStreakCard: View {
                     let done = completedWeekdays.contains(weekday)
                     VStack(spacing: 8) {
                         ZStack {
-                            Circle().fill(done ? DFColor.textPrimary : Color.white.opacity(0.1))
+                            Circle().fill(done ? DFColor.textPrimary : DFColor.scrim)
                             if done {
                                 Image(systemName: "checkmark")
                                     .font(.system(size: 13, weight: .bold))
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(DFColor.background)
                                     .transition(.scale.combined(with: .opacity))
                             }
                         }
