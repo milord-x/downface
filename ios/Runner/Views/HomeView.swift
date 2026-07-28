@@ -153,7 +153,7 @@ private struct TodayCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 }
 
@@ -188,7 +188,7 @@ private struct StatPill: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 }
 
@@ -240,6 +240,6 @@ private struct WeekStreakCard: View {
             }
         }
         .padding(DFSpacing.cardPadding)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 }
