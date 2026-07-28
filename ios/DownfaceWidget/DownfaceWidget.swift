@@ -23,10 +23,14 @@ struct ActivityProvider: TimelineProvider {
 }
 
 struct DownfaceWidgetView: View {
+    @Environment(\.widgetFamily) private var family
     let entry: ActivityEntry
 
-    private let weeks = 7
     private let daysPerWeek = 7
+
+    private var weeks: Int {
+        family == .systemMedium ? 15 : 7
+    }
 
     private var maxReps: Int {
         entry.snapshot.repsPerDay.values.max() ?? 1
@@ -64,9 +68,12 @@ struct DownfaceWidgetView: View {
 
                 GeometryReader { geo in
                     let spacing: CGFloat = 3
-                    let cellSize = (geo.size.width - spacing * CGFloat(weeks - 1)) / CGFloat(weeks)
+                    let widthPerCell = (geo.size.width - spacing * CGFloat(weeks - 1)) / CGFloat(weeks)
+                    let heightPerCell = (geo.size.height - spacing * CGFloat(daysPerWeek - 1)) / CGFloat(daysPerWeek)
+                    let cellSize = min(widthPerCell, heightPerCell)
 
                     HStack(spacing: spacing) {
+                        Spacer(minLength: 0)
                         ForEach(0..<weeks, id: \.self) { week in
                             VStack(spacing: spacing) {
                                 ForEach(0..<daysPerWeek, id: \.self) { day in
@@ -81,6 +88,7 @@ struct DownfaceWidgetView: View {
                             }
                         }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
             .padding(12)
