@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/icon/app_icon.png" width="120" alt="Downface" />
+<img src="assets/social/banner.png" alt="Downface — push-ups, tracked automatically" width="100%" />
 
 # DOWNFACE
 
@@ -9,9 +9,27 @@
 no sensors on your body, no manual taps, no server.
 place the phone on the floor, get down, and go.
 
+[![license: MIT](https://img.shields.io/badge/license-MIT-white?style=flat-square)](LICENSE)
+[![platform: iOS](https://img.shields.io/badge/platform-iOS%2018%2B-black?style=flat-square)](#running-it)
+[![Swift](https://img.shields.io/badge/Swift-SwiftUI-orange?style=flat-square)](#architecture)
+[![Flutter](https://img.shields.io/badge/logic-Flutter%20%2F%20Dart-blue?style=flat-square)](#architecture)
+
 </div>
 
 ---
+
+## contents
+
+- [how it works](#how-it-works)
+- [fatigue detection](#fatigue-detection)
+- [what it tracks](#what-it-tracks)
+- [your data leaves only if you tell it to](#your-data-leaves-only-if-you-tell-it-to)
+- [home screen widget](#home-screen-widget)
+- [alternate icons](#alternate-icons)
+- [design](#design)
+- [architecture](#architecture)
+- [running it](#running-it)
+- [license](#license)
 
 ## how it works
 
@@ -34,9 +52,17 @@ The counting logic lives entirely in [`RepCounter`](lib/features/workout/rep_cou
                   └── one rep ──┘
 ```
 
+The baseline (what counts as "top of the rep") tracks the highest point reached recently instead of snapping to the last sample — so a rep where you don't fully extend your arms near the end of a set doesn't shrink the amplitude every following rep needs, which used to make the counter silently stall a few reps into a tired set.
+
+## fatigue detection
+
+Downface compares the rolling average of your last few reps against the pace you set at the start of the set. Slow down enough, consistently, and a small message appears near the counter — not a single slow rep triggering a false alarm, and not something that flickers on and off once it fires. It stays until the set ends, dismissible with a tap, never blocking anything on screen.
+
 ## what it tracks
 
 Every set logs reps, duration, rest before the set, and per-rep timing — enough to compute averages later without recomputing from raw frames. A streak counter watches for at least one workout a day; miss a day and it resets, same rules as everyone expects from this kind of thing by now.
+
+Tap any day on the activity grid in the stats screen for the full breakdown: set count, reps per set, rest between them, sorted by time — not just a number, the whole session.
 
 Want to look at your own numbers instead of trusting a dashboard? The database is a plain SQLite file on your device — `sqflite`, no ORM magic on top.
 
@@ -50,6 +76,16 @@ Export produces a single `.dfbak` file: your full workout history, AES-256-GCM e
 lib/core/export/backup_codec.dart   — encode/decode + the tamper check
 test/backup_codec_test.dart         — proves a flipped byte gets rejected
 ```
+
+Apple Health sync is opt-in and one-way: Downface writes finished workouts to Health, it never reads anything back.
+
+## home screen widget
+
+A small and medium WidgetKit widget mirrors the activity grid on your home screen — nothing else on it, just the cells, filling the widget edge to edge with proportional insets that scale with widget size. Built against iOS 26's tinted/glass home screen rendering mode from day one, so it doesn't turn into a solid color block when you switch home screen styles.
+
+## alternate icons
+
+Settings → App icon lets you switch between the default icon and two alternates without leaving the app, using `UIApplication.setAlternateIconName` under the hood — no re-download, no re-install.
 
 ## design
 
@@ -71,6 +107,8 @@ ios/Runner/
 ios/DownfaceWidget/
   DownfaceWidget.swift     the home-screen activity widget
 ```
+
+Reminders are scheduled through `flutter_local_notifications` with the device's real timezone (not UTC) resolved via `flutter_timezone`, and every notification string — daily nudges, urgent same-day reminders, the midnight streak-loss warning — is translated across all 9 languages the app supports, not just hardcoded English.
 
 ## running it
 
