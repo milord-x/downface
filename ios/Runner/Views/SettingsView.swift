@@ -367,10 +367,8 @@ struct SettingsView: View {
                 navRow(icon: "hand.raised.fill", tint: .gray, title: "Terms of use")
             }
             SettingsDivider()
-            NavigationLink {
-                LegalTextView(title: "Privacy policy", text: Self.privacyText)
-            } label: {
-                navRow(icon: "lock.fill", tint: .gray, title: "Privacy policy")
+            Link(destination: URL(string: "https://milord-x.github.io/downface/privacy.html")!) {
+                externalRow(icon: "lock.fill", tint: .gray, title: "Privacy policy")
             }
             SettingsDivider()
             HStack {
@@ -499,24 +497,6 @@ struct SettingsView: View {
     "Downface" as a name and its icon are not covered by that license \u{2013} they identify this specific app. The code is free to reuse, the branding isn't.
 
     We can change these terms in a future update if the app changes in a way that needs it. If that happens, the update will be reflected here.
-    """
-
-    private static let privacyText = """
-    Downface doesn't have a server, an account system, or analytics of any kind. There's no login, so there's no account to hack and no email address stored anywhere.
-
-    The camera turns on only while you're actively doing a set, and only to track how your head moves so the app can count reps. No video, photo, or frame from the camera is ever saved, sent anywhere, or seen by anyone but you \u{2013} it's processed live on your device and then it's gone.
-
-    Your workout history (every set, every rep, every date) is stored locally in a small database on your phone. It only leaves the device if you export it yourself as a backup file, or if you turn on iCloud backup in Settings.
-
-    If you turn on Apple Health sync, Downface writes your finished workouts to Health so they show up next to your other activity. Downface never reads anything back from Health \u{2013} it only writes.
-
-    If you turn on iCloud backup, an encrypted copy of your workout history is stored in your own iCloud account so it can restore automatically on a new phone. That copy lives in storage only you control \u{2013} Downface has no server and no way to read it. Turning iCloud backup off stops updating that copy but doesn't delete it; you can remove it yourself from your iCloud storage settings at any time.
-
-    Backup files you export manually are encrypted before they're written to disk. Only Downface can open and read them back \u{2013} if you send a backup to someone or store it in the cloud yourself, it stays useless without the app.
-
-    If you allow notifications, they're scheduled and delivered entirely by iOS on your own device. Downface has no way to know whether a reminder was seen, tapped, or ignored.
-
-    Since nothing about you or your workouts ever reaches us, there's no data to sell, share, or lose in a breach. If that ever changes, this page will change first.
     """
 }
 
