@@ -36,7 +36,7 @@ struct SettingsView: View {
                     appearanceCard
                     appIconCard
                     remindersCard
-                    supportCard
+                    healthCard
                     iCloudBackupCard
                     groupedCard {
                         actionRow(icon: "square.and.arrow.up", tint: .blue, title: "Export backup file") {
@@ -47,7 +47,7 @@ struct SettingsView: View {
                             bridge.requestImport()
                         }
                     }
-                    healthCard
+                    supportCard
                     aboutCard
                     dangerZoneCard
 
@@ -118,11 +118,10 @@ struct SettingsView: View {
                 .foregroundStyle(DFColor.textPrimary)
                 .padding(.bottom, 8)
 
-            HStack(spacing: 16) {
+            HStack(spacing: 10) {
                 ForEach(AppIconOption.allCases) { option in
                     appIconButton(option)
                 }
-                Spacer()
             }
         }
     }
@@ -137,7 +136,8 @@ struct SettingsView: View {
         } label: {
             Image(option.assetName)
                 .resizable()
-                .frame(width: 56, height: 56)
+                .aspectRatio(1, contentMode: .fit)
+                .frame(maxWidth: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -520,6 +520,7 @@ struct SettingsView: View {
 
 private enum AppIconOption: String, CaseIterable, Identifiable {
     case primary
+    case pushup
     case classic
     case arrows
     case hands
@@ -533,6 +534,7 @@ private enum AppIconOption: String, CaseIterable, Identifiable {
     var iconName: String? {
         switch self {
         case .primary: return nil
+        case .pushup: return "AltIconPushup"
         case .classic: return "AltIconClassic"
         case .arrows: return "AltIconArrows"
         case .hands: return "AltIconHands"
@@ -542,6 +544,7 @@ private enum AppIconOption: String, CaseIterable, Identifiable {
     var assetName: String {
         switch self {
         case .primary: return "AppIconPreview"
+        case .pushup: return "AltIconPushupPreview"
         case .classic: return "AltIconClassicPreview"
         case .arrows: return "AltIconArrowsPreview"
         case .hands: return "AltIconHandsPreview"

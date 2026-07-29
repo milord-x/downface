@@ -10,7 +10,20 @@ final class NativeUIBridge: ObservableObject {
     private static let healthSyncKey = "health_sync_enabled"
 
     @Published var snapshot: AppSnapshot = .empty
-    @Published var workoutState: WorkoutUIState = .ready(supported: true)
+    @Published var workoutState: WorkoutUIState = .ready(supported: true) {
+        didSet {
+            // Rep counting relies on the camera and the user's hands, not
+            // touch — the screen reads as idle to iOS the whole set, so the
+            // system auto-lock (and Low Power Mode's more aggressive one)
+            // turns the display off mid-rep unless we hold it open here.
+            switch workoutState {
+            case .tracking, .resting:
+                UIApplication.shared.isIdleTimerDisabled = true
+            case .ready, .finished:
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+        }
+    }
     @Published var supported: Bool = true
     @Published var healthSyncEnabled: Bool = UserDefaults.standard.bool(forKey: NativeUIBridge.healthSyncKey)
     @Published var iCloudSyncEnabled: Bool = UserDefaults.standard.bool(forKey: NativeUIBridge.iCloudSyncKey)

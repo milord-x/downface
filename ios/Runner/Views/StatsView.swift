@@ -5,6 +5,7 @@ struct StatsView: View {
     @ObservedObject var bridge = NativeUIBridge.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showShareCard = false
+    @State private var selectedDate: Date?
 
     private var snapshot: AppSnapshot { bridge.snapshot }
     private var hasWorkouts: Bool { !snapshot.workouts.isEmpty }
@@ -72,7 +73,7 @@ struct StatsView: View {
             Text("activity")
                 .font(DFType.title)
                 .foregroundStyle(DFColor.textPrimary)
-            ActivityGrid(snapshot: snapshot)
+            ActivityGrid(snapshot: snapshot, selectedDate: $selectedDate)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
@@ -84,7 +85,7 @@ struct StatsView: View {
             Text("progress")
                 .font(DFType.title)
                 .foregroundStyle(DFColor.textPrimary)
-            WeeklyProgressChart(snapshot: snapshot)
+            WeeklyProgressChart(snapshot: snapshot, selectedDate: $selectedDate)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
@@ -130,6 +131,7 @@ private struct MetricCard: View {
 
 private struct WeeklyProgressChart: View {
     let snapshot: AppSnapshot
+    @Binding var selectedDate: Date?
     private let weeksShown = 12
 
     private struct WeekPoint: Identifiable {
@@ -138,8 +140,9 @@ private struct WeeklyProgressChart: View {
         let reps: Int
     }
 
+    private var calendar: Calendar { Calendar.current }
+
     private var points: [WeekPoint] {
-        let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let weekdayOfToday = calendar.component(.weekday, from: today)
         let daysSinceMonday = (weekdayOfToday + 5) % 7
@@ -155,61 +158,190 @@ private struct WeeklyProgressChart: View {
         }
     }
 
+    private var averageReps: Double {
+        guard !points.isEmpty else { return 0 }
+        return Double(points.reduce(0) { $0 + $1.reps }) / Double(points.count)
+    }
+
+    /// The week containing `selectedDate`, so tapping a day in the activity
+    /// grid above highlights the matching week here — the two views read as
+    /// one connected timeline instead of two disconnected charts. Falls
+    /// back to the most recent week so the detail card is never empty.
+    private var selectedWeek: WeekPoint? {
+        guard let selectedDate else { return points.last }
+        return points.first { point in
+            guard let weekEnd = calendar.date(byAdding: .day, value: 7, to: point.weekStart) else { return false }
+            return selectedDate >= point.weekStart && selectedDate < weekEnd
+        } ?? points.last
+    }
+
+    private var selectedWeekIndex: Int? {
+        guard let selectedWeek else { return nil }
+        return points.firstIndex { $0.id == selectedWeek.id }
+    }
+
+    private var previousWeek: WeekPoint? {
+        guard let index = selectedWeekIndex, index > 0 else { return nil }
+        return points[index - 1]
+    }
+
     var body: some View {
-        Chart(points) { point in
-            AreaMark(
-                x: .value("week", point.weekStart),
-                y: .value("reps", point.reps)
-            )
-            .foregroundStyle(
-                LinearGradient(
-                    colors: [DFColor.textPrimary.opacity(0.25), DFColor.textPrimary.opacity(0)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-            .interpolationMethod(.catmullRom)
+        VStack(alignment: .leading, spacing: 12) {
+            Chart {
+                ForEach(points) { point in
+                    AreaMark(
+                        x: .value("week", point.weekStart),
+                        y: .value("reps", point.reps)
+                    )
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [DFColor.textPrimary.opacity(0.25), DFColor.textPrimary.opacity(0)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .interpolationMethod(.catmullRom)
 
-            LineMark(
-                x: .value("week", point.weekStart),
-                y: .value("reps", point.reps)
-            )
-            .foregroundStyle(DFColor.textPrimary)
-            .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
-            .interpolationMethod(.catmullRom)
+                    LineMark(
+                        x: .value("week", point.weekStart),
+                        y: .value("reps", point.reps)
+                    )
+                    .foregroundStyle(DFColor.textPrimary)
+                    .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+                    .interpolationMethod(.catmullRom)
 
-            PointMark(
-                x: .value("week", point.weekStart),
-                y: .value("reps", point.reps)
-            )
-            .foregroundStyle(DFColor.textPrimary)
-            .symbolSize(point.weekStart == points.last?.weekStart ? 60 : 0)
-        }
-        .chartXAxis {
-            AxisMarks(values: .stride(by: .weekOfYear, count: 3)) { _ in
-                AxisValueLabel(format: .dateTime.month(.abbreviated).day(), centered: true)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(DFColor.textTertiary)
+                    PointMark(
+                        x: .value("week", point.weekStart),
+                        y: .value("reps", point.reps)
+                    )
+                    .foregroundStyle(DFColor.textPrimary)
+                    .symbolSize(selectedWeek?.id == point.id ? 70 : 0)
+                }
+
+                // A flat reference line for the average lets a given week's
+                // height mean something ("above/below your normal") instead
+                // of being a number with nothing to compare against.
+                RuleMark(y: .value("average", averageReps))
+                    .foregroundStyle(DFColor.textTertiary.opacity(0.5))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+
+                if let selectedWeek {
+                    RuleMark(x: .value("selected week", selectedWeek.weekStart))
+                        .foregroundStyle(DFColor.textPrimary.opacity(0.2))
+                        .lineStyle(StrokeStyle(lineWidth: 1))
+                }
+            }
+            .chartXAxis {
+                AxisMarks(values: .stride(by: .weekOfYear, count: 3)) { _ in
+                    AxisValueLabel(format: .dateTime.month(.abbreviated).day(), centered: true)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(DFColor.textTertiary)
+                }
+            }
+            .chartYAxis {
+                AxisMarks(position: .leading) { _ in
+                    AxisGridLine().foregroundStyle(DFColor.divider)
+                    AxisValueLabel()
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(DFColor.textTertiary)
+                }
+            }
+            .chartOverlay { proxy in
+                GeometryReader { geo in
+                    Rectangle()
+                        .fill(.clear)
+                        .contentShape(Rectangle())
+                        .gesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { value in
+                                    guard let plotFrame = proxy.plotFrame else { return }
+                                    let originX = geo[plotFrame].origin.x
+                                    let x = value.location.x - originX
+                                    guard let date: Date = proxy.value(atX: x) else { return }
+                                    if let tapped = points.min(by: {
+                                        abs($0.weekStart.timeIntervalSince(date)) < abs($1.weekStart.timeIntervalSince(date))
+                                    }) {
+                                        selectedDate = tapped.weekStart
+                                    }
+                                }
+                        )
+                }
+            }
+            .frame(height: 140)
+
+            if let selectedWeek {
+                weekDetail(week: selectedWeek, previous: previousWeek)
             }
         }
-        .chartYAxis {
-            AxisMarks(position: .leading) { _ in
-                AxisGridLine().foregroundStyle(DFColor.divider)
-                AxisValueLabel()
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(DFColor.textTertiary)
+    }
+
+    private func weekRangeText(_ weekStart: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
+        return String(
+            format: NSLocalizedString("%@ - %@", comment: "week range, e.g. Jul 14 - Jul 20"),
+            formatter.string(from: weekStart),
+            formatter.string(from: weekEnd)
+        )
+    }
+
+    private func weekRepsText(_ reps: Int) -> String {
+        let key = reps == 1 ? "%lld rep" : "%lld reps"
+        return String(format: NSLocalizedString(key, comment: ""), reps)
+    }
+
+    private func vsPriorWeekText(change: Int, previousReps: Int) -> String {
+        let key = "%@%lld vs %lld prior week"
+        return String(format: NSLocalizedString(key, comment: ""), change >= 0 ? "+" : "", change, previousReps)
+    }
+
+    private func weekDetail(week: WeekPoint, previous: WeekPoint?) -> some View {
+        let change: Int? = previous.map { week.reps - $0.reps }
+        let changePercent: Int? = previous.flatMap { prev in
+            guard prev.reps > 0 else { return nil }
+            return Int((Double(week.reps - prev.reps) / Double(prev.reps) * 100).rounded())
+        }
+
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(weekRangeText(week.weekStart))
+                    .font(DFType.caption)
+                    .foregroundStyle(DFColor.textSecondary)
+                Spacer()
+                if let changePercent {
+                    Label(
+                        "\(changePercent >= 0 ? "+" : "")\(changePercent)%",
+                        systemImage: changePercent >= 0 ? "arrow.up.right" : "arrow.down.right"
+                    )
+                    .font(DFType.caption.weight(.semibold))
+                    .foregroundStyle(changePercent >= 0 ? DFColor.textPrimary : DFColor.textTertiary)
+                }
+            }
+
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(weekRepsText(week.reps))
+                    .font(.system(size: 22, weight: .heavy, design: .rounded))
+                    .foregroundStyle(DFColor.textPrimary)
+                if let change, let previous {
+                    Text(vsPriorWeekText(change: change, previousReps: previous.reps))
+                        .font(DFType.caption)
+                        .foregroundStyle(DFColor.textTertiary)
+                }
             }
         }
-        .frame(height: 140)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(DFColor.cardFillStrong, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .transition(.opacity.combined(with: .move(edge: .top)))
+        .animation(.smooth, value: week.id)
     }
 }
 
 private struct ActivityGrid: View {
     let snapshot: AppSnapshot
+    @Binding var selectedDate: Date?
     private let weeks = 20
-
-    @State private var selectedDate: Date?
-    @State private var selectedReps = 0
 
     private var maxReps: Int {
         max(snapshot.workouts.map { $0.totalReps }.max() ?? 1, 1)
@@ -256,7 +388,6 @@ private struct ActivityGrid: View {
                                         .onTapGesture {
                                             guard !isFuture else { return }
                                             selectedDate = date
-                                            selectedReps = reps
                                         }
                                 }
                             }
@@ -267,7 +398,7 @@ private struct ActivityGrid: View {
             .defaultScrollAnchor(.trailing)
 
             if let selectedDate {
-                dayDetail(date: selectedDate, reps: selectedReps)
+                dayDetail(date: selectedDate, reps: snapshot.reps(on: selectedDate))
             }
         }
     }

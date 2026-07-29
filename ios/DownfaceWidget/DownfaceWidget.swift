@@ -86,18 +86,18 @@ struct DownfaceWidgetView: View {
         let firstMonday = calendar.date(byAdding: .day, value: -(maxWeeks - 1) * 7, to: lastMonday) ?? lastMonday
 
         return GeometryReader { geo in
-            // Own proportional inset instead of the system's fixed iOS 17+
-            // container margin, so the grid's edge padding scales evenly
-            // with the widget's actual size rather than a flat constant
-            // that reads as too tight on systemSmall and too loose on
-            // systemMedium.
-            let inset = min(geo.size.width, geo.size.height) * 0.06
+            // Fixed HIG-standard inset (matches Apple's own widgets) on
+            // every side instead of a proportional one — a flat constant
+            // reads as consistent padding across widget sizes the way a
+            // ratio of the shortest side doesn't.
+            let inset: CGFloat = 16
             let contentSize = CGSize(width: geo.size.width - inset * 2, height: geo.size.height - inset * 2)
             let grid = GridLayout.fitting(weeks: maxWeeks, in: contentSize)
             // The visible weeks are always the most recent ones — if fewer
             // weeks fit than maxWeeks, skip past the older ones instead of
             // showing the oldest slice of the requested range.
             let weekOffset = maxWeeks - grid.weeks
+            let gridWidth = CGFloat(grid.weeks) * grid.cellSize + CGFloat(grid.weeks - 1) * grid.spacing
 
             HStack(spacing: grid.spacing) {
                 ForEach(0..<grid.weeks, id: \.self) { week in
@@ -132,6 +132,12 @@ struct DownfaceWidgetView: View {
                 }
             }
             .widgetAccentable(!isFullColor)
+            // Sized to the grid's own footprint (not the full widget) so
+            // centering can't smuggle back the leftover space that
+            // rounding-down the week count leaves on the width axis —
+            // that leftover used to widen the side inset past the
+            // top/bottom one instead of splitting evenly.
+            .frame(width: gridWidth, height: geo.size.height - inset * 2, alignment: .center)
             .frame(width: geo.size.width, height: geo.size.height, alignment: .center)
         }
         .containerBackground(for: .widget) {
