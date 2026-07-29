@@ -19,6 +19,7 @@
 		4E7168CF4AF84D7D99353D1B /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484AA3F01AA94FDDA33C68BA /* DesignSystem.swift */; };
 		5D6AF75C046F4C00AA164350 /* NativeRootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAC97A55D5344B68603D92F /* NativeRootViewController.swift */; };
 		A8BA8E989A284585BF337C4B /* NativeUIBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87F6B702C31042599633AE5D /* NativeUIBridge.swift */; };
+		9E0000000000000000000002 /* ICloudBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0000000000000000000001 /* ICloudBackupService.swift */; };
 		4FEE9B8061484D39B2BA9FB6 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA92055220D04C039977AE4F /* HomeView.swift */; };
 		DE734A71DE464BCB9860DE15 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3739180EA14823B43A05ED /* SettingsView.swift */; };
 		1AE03AAAC4F24F03B3CBE265 /* ShareCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D3FC2A4C9C412886F3DD13 /* ShareCardView.swift */; };
@@ -95,6 +96,7 @@
 		484AA3F01AA94FDDA33C68BA /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		CEAC97A55D5344B68603D92F /* NativeRootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeRootViewController.swift; sourceTree = "<group>"; };
 		87F6B702C31042599633AE5D /* NativeUIBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeUIBridge.swift; sourceTree = "<group>"; };
+		9E0000000000000000000001 /* ICloudBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudBackupService.swift; sourceTree = "<group>"; };
 		CA92055220D04C039977AE4F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		FE3739180EA14823B43A05ED /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B4D3FC2A4C9C412886F3DD13 /* ShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardView.swift; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 				484AA3F01AA94FDDA33C68BA /* DesignSystem.swift */,
 				CEAC97A55D5344B68603D92F /* NativeRootViewController.swift */,
 				87F6B702C31042599633AE5D /* NativeUIBridge.swift */,
+				9E0000000000000000000001 /* ICloudBackupService.swift */,
 				1BFA00000000000000000001 /* Views */,
 			);
 			path = Runner;
@@ -408,6 +411,7 @@
 				4E7168CF4AF84D7D99353D1B /* DesignSystem.swift in Sources */,
 				5D6AF75C046F4C00AA164350 /* NativeRootViewController.swift in Sources */,
 				A8BA8E989A284585BF337C4B /* NativeUIBridge.swift in Sources */,
+				9E0000000000000000000002 /* ICloudBackupService.swift in Sources */,
 				4FEE9B8061484D39B2BA9FB6 /* HomeView.swift in Sources */,
 				DE734A71DE464BCB9860DE15 /* SettingsView.swift in Sources */,
 				1AE03AAAC4F24F03B3CBE265 /* ShareCardView.swift in Sources */,
