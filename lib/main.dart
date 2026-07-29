@@ -11,6 +11,7 @@ import 'core/models/workout.dart';
 import 'core/models/workout_set.dart';
 import 'features/workout/face_distance_source.dart';
 import 'features/workout/rep_counter.dart';
+import 'features/workout/threshold_calibration_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,7 @@ class NativeBridge {
   final _backup = BackupService();
   final _faceSource = FaceDistanceSource();
   final _repCounter = RepCounter();
+  final _calibration = ThresholdCalibrationService();
 
   DateTime? _workoutStart;
   DateTime? _setStart;
@@ -35,6 +37,12 @@ class NativeBridge {
     _channel.setMethodCallHandler(_onNativeCall);
     await _appState.load();
     _pushSnapshot();
+    final savedThresholds = await _calibration.load();
+    if (savedThresholds != null) {
+      final (down, up) = savedThresholds;
+      _repCounter.applyPersistedCalibration(down, up);
+    }
+    _repCounter.onCalibrated = _calibration.save;
     final supported = await _faceSource.isSupported();
     _channel.invokeMethod('workoutReady', {'supported': supported});
   }
@@ -58,6 +66,12 @@ class NativeBridge {
         _channel.invokeMethod('shareFile', {'path': file.path});
       case 'importBackup':
         await _importBackup();
+      case 'exportForICloud':
+        final file = await _backup.exportToFile();
+        _channel.invokeMethod('iCloudUpload', {'path': file.path});
+      case 'importBackupFromPath':
+        final args = call.arguments as Map<dynamic, dynamic>;
+        await _importBackupFromFile(File(args['path'] as String));
       case 'wipeData':
         await _appState.replaceAll([]);
         _pushSnapshot();
@@ -126,6 +140,10 @@ class NativeBridge {
     _restToken++;
     final start = _workoutStart;
     final end = DateTime.now();
+    final previousBestSet = _appState.bestSingleSet;
+    final previousBestDay = _appState.bestSingleDay;
+    var newBestSet = false;
+    var newBestDay = false;
     if (start != null && _sets.isNotEmpty) {
       await _appState.addWorkout(Workout(
         id: null,
@@ -133,7 +151,14 @@ class NativeBridge {
         endedAt: end,
         sets: List.of(_sets),
       ));
+      newBestSet = _appState.bestSingleSet > previousBestSet;
+      newBestDay = _appState.bestSingleDay > previousBestDay;
       _pushSnapshot();
+      // Native side checks whether iCloud sync is actually turned on before
+      // touching the container — this always fires so a set finishing
+      // right after the user enables sync doesn't wait for the next one.
+      final file = await _backup.exportToFile();
+      _channel.invokeMethod('iCloudUpload', {'path': file.path});
     }
     final totalReps = _sets.fold(0, (sum, s) => sum + s.reps);
     final setCount = _sets.length;
@@ -144,6 +169,8 @@ class NativeBridge {
       'sets': setCount,
       'startedAt': (start ?? end).millisecondsSinceEpoch.toDouble(),
       'endedAt': end.millisecondsSinceEpoch.toDouble(),
+      'newBestSet': newBestSet,
+      'newBestDay': newBestDay,
     });
   }
 
@@ -159,8 +186,12 @@ class NativeBridge {
   Future<void> _importBackup() async {
     final result = await FilePicker.platform.pickFiles();
     if (result == null || result.files.single.path == null) return;
+    await _importBackupFromFile(File(result.files.single.path!));
+  }
+
+  Future<void> _importBackupFromFile(File file) async {
     try {
-      await _backup.importFromFile(File(result.files.single.path!));
+      await _backup.importFromFile(file);
       await _appState.load();
       _pushSnapshot();
     } on TamperedBackupException {

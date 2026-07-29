@@ -46,6 +46,45 @@ void main() {
     expect(counter.reps, 3);
   });
 
+  test('counts a shallow-amplitude rep with the default thresholds', () {
+    // Not every setup gives the full ~15cm swing used elsewhere in this
+    // file — an angled phone or a shorter range of motion can mean the
+    // face-to-camera distance only moves a few centimeters. The default
+    // downThreshold/upThreshold need to be low enough to still catch that.
+    final counter = RepCounter(minRepMs: 0);
+    var t = 0;
+    for (var i = 0; i < 5; i++) {
+      for (final d in [0.30, 0.275, 0.30]) {
+        counter.onDistanceSample(d, t);
+        t += 200;
+      }
+    }
+    expect(counter.reps, 5);
+  });
+
+  test('calibrates thresholds to the measured amplitude after enough reps', () {
+    final counter = RepCounter(minRepMs: 0, calibrationRepCount: 3);
+    var t = 0;
+    void rep(double low) {
+      for (final d in [0.30, low, 0.30]) {
+        counter.onDistanceSample(d, t);
+        t += 200;
+      }
+    }
+
+    expect(counter.isCalibrated, false);
+    // ~3cm amplitude, comfortably above the default 2cm downThreshold so
+    // these reps still register before calibration kicks in.
+    rep(0.27);
+    rep(0.27);
+    rep(0.27);
+
+    expect(counter.isCalibrated, true);
+    // 40% of a 3cm amplitude is a good deal smaller than the 2cm default.
+    expect(counter.downThreshold, lessThan(0.02));
+    expect(counter.downThreshold, greaterThan(0.0));
+  });
+
   test('keeps counting past a shallow top-of-rep instead of stalling', () {
     // A rep that only recovers to 0.28 instead of the usual 0.30 (the
     // fatigued user not fully extending their arms) used to permanently

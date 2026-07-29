@@ -85,6 +85,23 @@ class AppState extends ChangeNotifier {
 
   int get repsAllTime => workouts.fold(0, (sum, w) => sum + w.totalReps);
 
+  /// The most reps ever done in a single set.
+  int get bestSingleSet {
+    var best = 0;
+    for (final w in workouts) {
+      for (final s in w.sets) {
+        if (s.reps > best) best = s.reps;
+      }
+    }
+    return best;
+  }
+
+  /// The most reps ever done across all sets in a single calendar day.
+  int get bestSingleDay {
+    final perDay = repsPerDay;
+    return perDay.values.fold(0, (best, reps) => reps > best ? reps : best);
+  }
+
   /// yyyy-MM-dd in local time, matching the widget's day-key format —
   /// avoids any floating-point precision mismatch that a millisecond
   /// timestamp key would risk across the Dart/Swift JSON round trip.
@@ -126,6 +143,8 @@ class AppState extends ChangeNotifier {
       'repsThisWeek': repsSince(weekStart),
       'repsThisMonth': repsSince(monthStart),
       'repsAllTime': repsAllTime,
+      'bestSingleSet': bestSingleSet,
+      'bestSingleDay': bestSingleDay,
       'activeDayTimestamps':
           activeDays.map((d) => d.millisecondsSinceEpoch.toDouble()).toList(),
       'repsPerDay': repsPerDay.map(

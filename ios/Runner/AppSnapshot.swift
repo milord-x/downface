@@ -30,6 +30,8 @@ struct AppSnapshot: Codable {
     let repsThisWeek: Int
     let repsThisMonth: Int
     let repsAllTime: Int
+    let bestSingleSet: Int
+    let bestSingleDay: Int
     let activeDayTimestamps: [Double]
     let repsPerDay: [String: Int]
     let remindersEnabled: Bool
@@ -43,6 +45,8 @@ struct AppSnapshot: Codable {
         repsThisWeek: 0,
         repsThisMonth: 0,
         repsAllTime: 0,
+        bestSingleSet: 0,
+        bestSingleDay: 0,
         activeDayTimestamps: [],
         repsPerDay: [:],
         remindersEnabled: false,

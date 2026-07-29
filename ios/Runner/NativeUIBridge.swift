@@ -13,6 +13,10 @@ final class NativeUIBridge: ObservableObject {
     @Published var workoutState: WorkoutUIState = .ready(supported: true)
     @Published var supported: Bool = true
     @Published var healthSyncEnabled: Bool = UserDefaults.standard.bool(forKey: NativeUIBridge.healthSyncKey)
+    @Published var iCloudSyncEnabled: Bool = UserDefaults.standard.bool(forKey: NativeUIBridge.iCloudSyncKey)
+    @Published var iCloudRestoreStatus: ICloudRestoreStatus = .idle
+
+    private static let iCloudSyncKey = "icloud_sync_enabled"
 
     /// Set once, right when the user taps "done" on the finished-workout
     /// screen, carrying the rep count so HomeView can fly a copy of that
@@ -56,7 +60,9 @@ final class NativeUIBridge: ObservableObject {
             if let args = call.arguments as? [String: Any] {
                 let totalReps = args["totalReps"] as? Int ?? 0
                 let sets = args["sets"] as? Int ?? 0
-                workoutState = .finished(totalReps: totalReps, sets: sets)
+                let newBestSet = args["newBestSet"] as? Bool ?? false
+                let newBestDay = args["newBestDay"] as? Bool ?? false
+                workoutState = .finished(totalReps: totalReps, sets: sets, newBestSet: newBestSet, newBestDay: newBestDay)
 
                 if healthSyncEnabled, sets > 0,
                    let startedAt = args["startedAt"] as? Double,
@@ -77,6 +83,11 @@ final class NativeUIBridge: ObservableObject {
         case "shareFile":
             if let args = call.arguments as? [String: Any], let path = args["path"] as? String {
                 presentShareSheet(forFileAt: path)
+            }
+            result(nil)
+        case "iCloudUpload":
+            if iCloudSyncEnabled, let args = call.arguments as? [String: Any], let path = args["path"] as? String {
+                ICloudBackupService.shared.upload(fileAt: path)
             }
             result(nil)
         default:
@@ -149,13 +160,53 @@ final class NativeUIBridge: ObservableObject {
             UserDefaults.standard.set(false, forKey: Self.healthSyncKey)
         }
     }
+
+    func setICloudSyncEnabled(_ enabled: Bool) {
+        iCloudSyncEnabled = enabled
+        UserDefaults.standard.set(enabled, forKey: Self.iCloudSyncKey)
+        if enabled {
+            // Turning sync on doesn't wait for the next workout to upload
+            // whatever's already on this device.
+            send("exportForICloud")
+        }
+    }
+
+    /// Downloads whatever backup is currently in this device's iCloud
+    /// container and hands it to the same import path a manually picked
+    /// .dfbak file goes through — restore is always an explicit action the
+    /// user triggers from Settings, never automatic, so a fresh install
+    /// never silently overwrites in-progress data.
+    func restoreFromICloud() {
+        guard ICloudBackupService.shared.isAvailable else {
+            iCloudRestoreStatus = .failed
+            return
+        }
+        iCloudRestoreStatus = .restoring
+        Task {
+            guard let path = await ICloudBackupService.shared.downloadLatest() else {
+                await MainActor.run { iCloudRestoreStatus = .noBackupFound }
+                return
+            }
+            await MainActor.run {
+                iCloudRestoreStatus = .idle
+                send("importBackupFromPath", ["path": path])
+            }
+        }
+    }
+}
+
+enum ICloudRestoreStatus: Equatable {
+    case idle
+    case restoring
+    case noBackupFound
+    case failed
 }
 
 enum WorkoutUIState {
     case ready(supported: Bool)
     case tracking(reps: Int, fatigued: Bool)
     case resting(seconds: Int, setsSoFar: Int)
-    case finished(totalReps: Int, sets: Int)
+    case finished(totalReps: Int, sets: Int, newBestSet: Bool, newBestDay: Bool)
 }
 
 struct PendingRepsFlight: Equatable {

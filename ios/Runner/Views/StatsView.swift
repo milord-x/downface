@@ -1,3 +1,4 @@
+import Charts
 import SwiftUI
 
 struct StatsView: View {
@@ -27,6 +28,7 @@ struct StatsView: View {
                     ScrollView {
                         VStack(spacing: 16) {
                             activityCard
+                            weeklyProgressCard
                             HStack(spacing: 12) {
                                 MetricCard(label: "avg rep", value: String(format: "%.1fs", avgRepSeconds))
                                 MetricCard(label: "avg rest", value: "\(Int(avgRestSeconds))s")
@@ -34,6 +36,10 @@ struct StatsView: View {
                             HStack(spacing: 12) {
                                 MetricCard(label: "longest streak", value: "\(snapshot.streak.longest)d")
                                 MetricCard(label: "total workouts", value: "\(snapshot.workouts.count)")
+                            }
+                            HStack(spacing: 12) {
+                                MetricCard(label: "best set", value: "\(snapshot.bestSingleSet)")
+                                MetricCard(label: "best day", value: "\(snapshot.bestSingleDay)")
                             }
                         }
                         .padding(DFSpacing.screenPadding)
@@ -67,6 +73,18 @@ struct StatsView: View {
                 .font(DFType.title)
                 .foregroundStyle(DFColor.textPrimary)
             ActivityGrid(snapshot: snapshot)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(DFSpacing.cardPadding)
+        .background(DFColor.cardFill, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+    }
+
+    private var weeklyProgressCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("progress")
+                .font(DFType.title)
+                .foregroundStyle(DFColor.textPrimary)
+            WeeklyProgressChart(snapshot: snapshot)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
@@ -107,6 +125,82 @@ private struct MetricCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
         .background(DFColor.cardFill, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+}
+
+private struct WeeklyProgressChart: View {
+    let snapshot: AppSnapshot
+    private let weeksShown = 12
+
+    private struct WeekPoint: Identifiable {
+        let id: Int
+        let weekStart: Date
+        let reps: Int
+    }
+
+    private var points: [WeekPoint] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let weekdayOfToday = calendar.component(.weekday, from: today)
+        let daysSinceMonday = (weekdayOfToday + 5) % 7
+        let thisMonday = calendar.date(byAdding: .day, value: -daysSinceMonday, to: today) ?? today
+
+        return (0..<weeksShown).reversed().map { weeksAgo in
+            let weekStart = calendar.date(byAdding: .day, value: -weeksAgo * 7, to: thisMonday) ?? thisMonday
+            let total = (0..<7).reduce(0) { sum, dayOffset in
+                let date = calendar.date(byAdding: .day, value: dayOffset, to: weekStart) ?? weekStart
+                return sum + snapshot.reps(on: date)
+            }
+            return WeekPoint(id: weeksAgo, weekStart: weekStart, reps: total)
+        }
+    }
+
+    var body: some View {
+        Chart(points) { point in
+            AreaMark(
+                x: .value("week", point.weekStart),
+                y: .value("reps", point.reps)
+            )
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [DFColor.textPrimary.opacity(0.25), DFColor.textPrimary.opacity(0)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .interpolationMethod(.catmullRom)
+
+            LineMark(
+                x: .value("week", point.weekStart),
+                y: .value("reps", point.reps)
+            )
+            .foregroundStyle(DFColor.textPrimary)
+            .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+            .interpolationMethod(.catmullRom)
+
+            PointMark(
+                x: .value("week", point.weekStart),
+                y: .value("reps", point.reps)
+            )
+            .foregroundStyle(DFColor.textPrimary)
+            .symbolSize(point.weekStart == points.last?.weekStart ? 60 : 0)
+        }
+        .chartXAxis {
+            AxisMarks(values: .stride(by: .weekOfYear, count: 3)) { _ in
+                AxisValueLabel(format: .dateTime.month(.abbreviated).day(), centered: true)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(DFColor.textTertiary)
+            }
+        }
+        .chartYAxis {
+            AxisMarks(position: .leading) { _ in
+                AxisGridLine().foregroundStyle(DFColor.divider)
+                AxisValueLabel()
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(DFColor.textTertiary)
+            }
+        }
+        .frame(height: 140)
     }
 }
 

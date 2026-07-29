@@ -35,8 +35,8 @@ struct WorkoutView: View {
                     onNext: { bridge.startWorkoutSet() },
                     onFinish: { bridge.finishWorkout() }
                 )
-            case .finished(let totalReps, let sets):
-                FinishedStateView(totalReps: totalReps, sets: sets, namespace: namespace) {
+            case .finished(let totalReps, let sets, let newBestSet, let newBestDay):
+                FinishedStateView(totalReps: totalReps, sets: sets, newBestSet: newBestSet, newBestDay: newBestDay, namespace: namespace) {
                     dismiss()
                 }
             }
@@ -388,8 +388,12 @@ private struct RestingStateView: View {
 private struct FinishedStateView: View {
     let totalReps: Int
     let sets: Int
+    let newBestSet: Bool
+    let newBestDay: Bool
     let namespace: Namespace.ID
     let onDone: () -> Void
+
+    @State private var badgeVisible = false
 
     private var totalRepsText: String {
         let key = totalReps == 1 ? "%lld rep" : "%lld reps"
@@ -404,6 +408,16 @@ private struct FinishedStateView: View {
     var body: some View {
         VStack(spacing: 8) {
             Spacer()
+
+            if newBestSet || newBestDay {
+                PersonalRecordBadge(newBestSet: newBestSet, newBestDay: newBestDay)
+                    .scaleEffect(badgeVisible ? 1 : 0.6)
+                    .opacity(badgeVisible ? 1 : 0)
+                    .padding(.bottom, 8)
+                    .onAppear {
+                        withAnimation(.bouncy.delay(0.2)) { badgeVisible = true }
+                    }
+            }
 
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 64))
@@ -438,5 +452,30 @@ private struct FinishedStateView: View {
             .padding(.horizontal, DFSpacing.screenPadding)
             .padding(.bottom, 24)
         }
+    }
+}
+
+private struct PersonalRecordBadge: View {
+    let newBestSet: Bool
+    let newBestDay: Bool
+
+    private var text: LocalizedStringKey {
+        if newBestSet && newBestDay {
+            return "new personal best \u{2013} set and day"
+        }
+        return newBestSet ? "new personal best \u{2013} single set" : "new personal best \u{2013} single day"
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "trophy.fill")
+                .font(.system(size: 13, weight: .semibold))
+            Text(text)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+        }
+        .foregroundStyle(DFColor.background)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(DFColor.textPrimary, in: Capsule())
     }
 }

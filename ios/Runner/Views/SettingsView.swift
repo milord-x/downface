@@ -37,6 +37,7 @@ struct SettingsView: View {
                     appIconCard
                     remindersCard
                     supportCard
+                    iCloudBackupCard
                     groupedCard {
                         actionRow(icon: "square.and.arrow.up", tint: .blue, title: "Export backup file") {
                             bridge.requestExport()
@@ -274,6 +275,57 @@ struct SettingsView: View {
     }
 
     // MARK: - Health
+
+    // MARK: - iCloud backup
+
+    private var iCloudBackupCard: some View {
+        groupedCard {
+            HStack {
+                settingsIcon("icloud.fill", tint: .blue)
+                Text("iCloud backup")
+                    .foregroundStyle(DFColor.textPrimary)
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { bridge.iCloudSyncEnabled },
+                    set: { bridge.setICloudSyncEnabled($0) }
+                ))
+                .labelsHidden()
+            }
+            .padding(.vertical, 4)
+
+            Text("Keeps an encrypted copy of your workout history in your iCloud account, so moving to a new phone restores it automatically.")
+                .font(DFType.caption)
+                .foregroundStyle(DFColor.textSecondary)
+                .padding(.top, 2)
+
+            SettingsDivider()
+
+            Button {
+                bridge.restoreFromICloud()
+            } label: {
+                HStack {
+                    settingsIcon("arrow.clockwise.icloud.fill", tint: .blue)
+                    Text(restoreButtonText)
+                        .foregroundStyle(DFColor.textPrimary)
+                    Spacer()
+                    if bridge.iCloudRestoreStatus == .restoring {
+                        ProgressView()
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+            .disabled(bridge.iCloudRestoreStatus == .restoring)
+        }
+    }
+
+    private var restoreButtonText: LocalizedStringKey {
+        switch bridge.iCloudRestoreStatus {
+        case .idle: return "Restore from iCloud"
+        case .restoring: return "Restoring…"
+        case .noBackupFound: return "No backup found in iCloud"
+        case .failed: return "iCloud isn't available"
+        }
+    }
 
     private var healthCard: some View {
         groupedCard {
