@@ -361,10 +361,8 @@ struct SettingsView: View {
                 externalRow(icon: "questionmark.circle.fill", tint: .gray, title: "FAQ & discussions")
             }
             SettingsDivider()
-            NavigationLink {
-                LegalTextView(title: "Terms of use", text: Self.termsText)
-            } label: {
-                navRow(icon: "hand.raised.fill", tint: .gray, title: "Terms of use")
+            Link(destination: URL(string: "https://milord-x.github.io/downface/terms.html")!) {
+                externalRow(icon: "hand.raised.fill", tint: .gray, title: "Terms of use")
             }
             SettingsDivider()
             Link(destination: URL(string: "https://milord-x.github.io/downface/privacy.html")!) {
@@ -483,21 +481,6 @@ struct SettingsView: View {
         return "\(version) (\(build))"
     }
 
-    private static let termsText = """
-    Downface is a free app, provided as-is, with no warranty of any kind. There's no subscription, no paywall, and nothing to buy inside the app.
-
-    You use Downface at your own risk. Push-ups and any physical activity you do while using this app are your own responsibility \u{2013} if you have a health condition, an injury, or any doubt about whether an exercise is safe for you, talk to a doctor before you start. Downface counts reps, it doesn't replace medical advice.
-
-    The app tracks your head position with the camera to count reps. It doesn't grade your form and can't tell you if you're doing a push-up correctly or safely. Go at your own pace and stop if something hurts.
-
-    All your workout data (reps, sets, dates, streaks) stays on your device. Nothing is uploaded anywhere unless you export a backup file yourself or turn on iCloud backup in Settings \u{2013} and in both cases, that data only ever goes to storage you control (a file you send, or your own iCloud account).
-
-    Downface's source code is open and available under the MIT license. You can read it, audit it, or build your own version \u{2013} see the GitHub repository linked in this screen for the full license text and the code itself.
-
-    "Downface" as a name and its icon are not covered by that license \u{2013} they identify this specific app. The code is free to reuse, the branding isn't.
-
-    We can change these terms in a future update if the app changes in a way that needs it. If that happens, the update will be reflected here.
-    """
 }
 
 private enum AppIconOption: String, CaseIterable, Identifiable {
@@ -652,19 +635,3 @@ private struct SparkleField: View {
     }
 }
 
-private struct LegalTextView: View {
-    let title: LocalizedStringKey
-    let text: String
-
-    var body: some View {
-        ScrollView {
-            Text(text)
-                .font(DFType.body)
-                .foregroundStyle(DFColor.textPrimary)
-                .padding(DFSpacing.screenPadding)
-        }
-        .background(DFColor.background.ignoresSafeArea())
-        .navigationTitle(title)
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
