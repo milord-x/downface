@@ -457,9 +457,9 @@ private struct ActivityGrid: View {
                 VStack(alignment: .leading, spacing: 6) {
                     monthLabels(calendar: calendar, firstMonday: firstMonday)
 
-                    HStack(alignment: .top, spacing: 5) {
+                    HStack(alignment: .top, spacing: 4) {
                         ForEach(0..<weeks, id: \.self) { week in
-                            VStack(spacing: 5) {
+                            VStack(spacing: 4) {
                                 ForEach(0..<7, id: \.self) { day in
                                     let date = calendar.date(byAdding: .day, value: week * 7 + day, to: firstMonday) ?? firstMonday
                                     let isFuture = date > today
@@ -467,7 +467,7 @@ private struct ActivityGrid: View {
 
                                     RoundedRectangle(cornerRadius: 4)
                                         .fill(isFuture ? Color.clear : intensity(for: reps))
-                                        .frame(width: 18, height: 18)
+                                        .frame(width: 16, height: 16)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 4)
                                                 .stroke(DFColor.textPrimary.opacity(calendar.isDate(date, inSameDayAs: initialDate) ? 0.9 : 0), lineWidth: 1.5)
@@ -628,7 +628,7 @@ private struct ActivityGrid: View {
         return HStack(alignment: .top, spacing: 0) {
             ForEach(Array(labels.enumerated()), id: \.offset) { index, item in
                 let nextWeek = index + 1 < labels.count ? labels[index + 1].week : weeks
-                let width = CGFloat(nextWeek - item.week) * 23
+                let width = CGFloat(nextWeek - item.week) * 20
                 Text(item.name)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(DFColor.textTertiary)
