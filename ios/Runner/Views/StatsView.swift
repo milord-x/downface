@@ -385,7 +385,7 @@ private struct WeeklyProgressChart: View {
                     .font(DFType.caption)
                     .foregroundStyle(DFColor.textSecondary)
                 Spacer()
-                if let changePercent {
+                if week.reps > 0, let changePercent {
                     Label(
                         "\(changePercent >= 0 ? "+" : "")\(changePercent)%",
                         systemImage: changePercent >= 0 ? "arrow.up.right" : "arrow.down.right"
@@ -395,15 +395,22 @@ private struct WeeklyProgressChart: View {
                 }
             }
 
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(weekRepsText(week.reps))
-                    .font(.system(size: 22, weight: .heavy, design: .rounded))
-                    .foregroundStyle(DFColor.textPrimary)
-                if let change, let previous {
-                    Text(vsPriorWeekText(change: change, previousReps: previous.reps))
-                        .font(DFType.caption)
-                        .foregroundStyle(DFColor.textTertiary)
+            if week.reps > 0 {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(weekRepsText(week.reps))
+                        .font(.system(size: 22, weight: .heavy, design: .rounded))
+                        .foregroundStyle(DFColor.textPrimary)
+                    if let change, let previous {
+                        Text(vsPriorWeekText(change: change, previousReps: previous.reps))
+                            .font(DFType.caption)
+                            .foregroundStyle(DFColor.textTertiary)
+                    }
                 }
+            } else {
+                Text("no workouts this week")
+                    .font(DFType.caption.weight(.semibold))
+                    .foregroundStyle(DFColor.textSecondary)
+                    .padding(.vertical, 6)
             }
         }
         .padding(.horizontal, 12)
@@ -525,6 +532,7 @@ private struct ActivityGrid: View {
         formatter.dateFormat = "EEEE, MMM d"
         let sets = setsOn(date)
         let overflow = sets.count > Self.inlineSetLimit
+        let isToday = Calendar.current.isDateInToday(date)
 
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -532,9 +540,11 @@ private struct ActivityGrid: View {
                     .font(DFType.caption)
                     .foregroundStyle(DFColor.textSecondary)
                 Spacer()
-                Text(reps > 0 ? repsText(reps) : "no workout")
-                    .font(DFType.caption.weight(.semibold))
-                    .foregroundStyle(reps > 0 ? DFColor.textPrimary : DFColor.textTertiary)
+                if reps > 0 {
+                    Text(repsText(reps))
+                        .font(DFType.caption.weight(.semibold))
+                        .foregroundStyle(DFColor.textPrimary)
+                }
             }
 
             if !sets.isEmpty {
@@ -556,11 +566,32 @@ private struct ActivityGrid: View {
                     }
                 }
                 .padding(.top, 2)
+            } else {
+                noWorkoutState(isToday: isToday)
+                    .padding(.top, 4)
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(DFColor.cardFillStrong, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    /// Fills the space a "no workout" day would otherwise leave blank in
+    /// the card, and gives today a nudge to actually start instead of the
+    /// same flat past-tense line every other empty day gets.
+    private func noWorkoutState(isToday: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(isToday ? "no set today yet" : "no set that day")
+                .font(DFType.caption.weight(.semibold))
+                .foregroundStyle(DFColor.textSecondary)
+            if isToday {
+                Text("start your first one!")
+                    .font(DFType.caption)
+                    .foregroundStyle(DFColor.textTertiary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 8)
     }
 
     private func setRow(index: Int, set: WorkoutSetSnapshot) -> some View {
