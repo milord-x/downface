@@ -32,7 +32,7 @@ struct ReminderOnboardingView: View {
 
             Spacer()
 
-            GlassEffectContainer(spacing: 16) {
+            DFButtonGroup(spacing: 16) {
                 VStack(spacing: 12) {
                     Button {
                         bridge.setRemindersEnabled(true, minutes: bridge.snapshot.reminderMinutes)
@@ -43,10 +43,8 @@ struct ReminderOnboardingView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                     }
-                    .buttonStyle(.glassProminent)
-                    .tint(.white)
-                    .foregroundStyle(.black)
-                    .glassEffectID("primary", in: namespace)
+                    .dfPrimaryButtonStyle()
+                    .dfGlassID("primary", in: namespace)
 
                     Button {
                         bridge.declineReminders()
@@ -57,8 +55,8 @@ struct ReminderOnboardingView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                     }
-                    .buttonStyle(.glass)
-                    .glassEffectID("secondary", in: namespace)
+                    .dfSecondaryButtonStyle()
+                    .dfGlassID("secondary", in: namespace)
                 }
             }
             .padding(.horizontal, DFSpacing.screenPadding)

@@ -24,7 +24,7 @@ struct ActivityProvider: TimelineProvider {
 
 /// Fills the given content-area size edge-to-edge with a 7-row grid: the
 /// cell size is solved from the available height first (7 rows + 6 gaps),
-/// then however many whole weeks fit that width are shown — so the grid
+/// then however many whole weeks fit that width are shown – so the grid
 /// always reaches every edge of the widget with even, proportional gaps
 /// instead of a fixed cell size leaving leftover space on one side.
 private struct GridLayout {
@@ -53,7 +53,7 @@ struct DownfaceWidgetView: View {
     private var maxWeeks: Int { family == .systemMedium ? 16 : 7 }
 
     /// iOS 26's tinted/glass home screen mode replaces widget colors with
-    /// a system-applied tint — fighting that with hardcoded black/white
+    /// a system-applied tint – fighting that with hardcoded black/white
     /// (which is what made the whole widget render as a solid white
     /// block) instead of adapting to it. `.accented` / `.vibrant` modes
     /// get the system's own foreground style; only plain `.fullColor`
@@ -76,7 +76,7 @@ struct DownfaceWidgetView: View {
     var body: some View {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        // Anchor on today's own week and step back full weeks — anchoring
+        // Anchor on today's own week and step back full weeks – anchoring
         // on the range start instead (then shifting it to its Monday)
         // shrinks the range by that shift, so the last cell always landed
         // a few days before today.
@@ -87,13 +87,13 @@ struct DownfaceWidgetView: View {
 
         return GeometryReader { geo in
             // Fixed HIG-standard inset (matches Apple's own widgets) on
-            // every side instead of a proportional one — a flat constant
+            // every side instead of a proportional one – a flat constant
             // reads as consistent padding across widget sizes the way a
             // ratio of the shortest side doesn't.
             let inset: CGFloat = 16
             let contentSize = CGSize(width: geo.size.width - inset * 2, height: geo.size.height - inset * 2)
             let grid = GridLayout.fitting(weeks: maxWeeks, in: contentSize)
-            // The visible weeks are always the most recent ones — if fewer
+            // The visible weeks are always the most recent ones – if fewer
             // weeks fit than maxWeeks, skip past the older ones instead of
             // showing the oldest slice of the requested range.
             let weekOffset = maxWeeks - grid.weeks
@@ -115,7 +115,7 @@ struct DownfaceWidgetView: View {
 
                             // Only the corner of each outermost cell that
                             // actually faces the widget's own rounded edge
-                            // opens up to echo that curve — rounding every
+                            // opens up to echo that curve – rounding every
                             // corner of the cell turned it into a circle
                             // instead of a square with one softened corner.
                             UnevenRoundedRectangle(
@@ -134,11 +134,18 @@ struct DownfaceWidgetView: View {
             .widgetAccentable(!isFullColor)
             // Sized to the grid's own footprint (not the full widget) so
             // centering can't smuggle back the leftover space that
-            // rounding-down the week count leaves on the width axis —
+            // rounding-down the week count leaves on the width axis –
             // that leftover used to widen the side inset past the
             // top/bottom one instead of splitting evenly.
-            .frame(width: gridWidth, height: geo.size.height - inset * 2, alignment: .center)
-            .frame(width: geo.size.width, height: geo.size.height, alignment: .center)
+            .frame(width: gridWidth, height: geo.size.height - inset * 2, alignment: .top)
+            // Pinned to the top instead of centered vertically: iOS reserves
+            // a bit of extra room below the visible widget surface (for the
+            // system's own shelf/shadow), which GeometryReader's size still
+            // includes – centering split that slack evenly, so it silently
+            // widened the bottom inset past the top one instead of leaving
+            // both equal.
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
+            .padding(.top, inset)
         }
         .containerBackground(for: .widget) {
             if isFullColor {

@@ -17,7 +17,7 @@ struct HomeView: View {
 
     /// These four figures are what's actually on screen. They only catch up
     /// to the live snapshot once the rep-count flight animation lands (see
-    /// `pendingRepsFlight`), or immediately if no flight is in progress — so
+    /// `pendingRepsFlight`), or immediately if no flight is in progress – so
     /// none of the cards jump to the new totals before the flying number
     /// visually arrives, even though the Dart side already pushed the
     /// updated snapshot the moment the finished-workout screen appeared.
@@ -89,7 +89,7 @@ struct HomeView: View {
                     // The finished-workout screen and this one are separate
                     // presentation layers, so there's no reliable shared
                     // coordinate space to read its number's exact position
-                    // from — instead, start from where that number visually
+                    // from – instead, start from where that number visually
                     // sits on that screen: roughly centered, a bit above the
                     // middle, same layout rhythm (two spacers around it).
                     let start = CGPoint(x: rootGeo.size.width / 2, y: rootGeo.size.height * 0.42)
@@ -129,7 +129,7 @@ struct HomeView: View {
         }
         .onChange(of: showWorkout) { _, opened in
             // Freeze every figure the workout could change for the whole
-            // time the sheet is up — the Dart side already pushes the
+            // time the sheet is up – the Dart side already pushes the
             // updated snapshot before the finished screen appears, so
             // without this the cards would silently show the new totals
             // behind the sheet and the flight animation would land on
@@ -176,13 +176,12 @@ struct HomeView: View {
                     .foregroundStyle(DFColor.textPrimary)
                     .frame(width: 44, height: 44)
             }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
+            .dfCircleButtonStyle()
         }
     }
 
     private var actionBar: some View {
-        GlassEffectContainer(spacing: 16) {
+        DFButtonGroup(spacing: 16) {
             HStack(spacing: 16) {
                 Button {
                     showWorkout = true
@@ -192,10 +191,8 @@ struct HomeView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
                 }
-                .buttonStyle(.glassProminent)
-                .tint(.white)
-                .foregroundStyle(.black)
-                .glassEffectID("start", in: namespace)
+                .dfPrimaryButtonStyle()
+                .dfGlassID("start", in: namespace)
 
                 Button {
                     showStats = true
@@ -204,9 +201,8 @@ struct HomeView: View {
                         .font(.system(size: 20, weight: .semibold))
                         .frame(width: 56, height: 56)
                 }
-                .buttonStyle(.glass)
-                .buttonBorderShape(.circle)
-                .glassEffectID("stats", in: namespace)
+                .dfCircleButtonStyle()
+                .dfGlassID("stats", in: namespace)
             }
         }
     }
@@ -316,7 +312,7 @@ private struct TodayCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .dfCardSurface(cornerRadius: 28)
     }
 }
 
@@ -351,7 +347,7 @@ private struct StatPill: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .dfCardSurface(cornerRadius: 20)
     }
 }
 
@@ -403,6 +399,6 @@ private struct WeekStreakCard: View {
             }
         }
         .padding(DFSpacing.cardPadding)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .dfCardSurface(cornerRadius: 28)
     }
 }

@@ -126,8 +126,7 @@ private struct CloseButton: View {
                 .foregroundStyle(DFColor.textPrimary)
                 .frame(width: 40, height: 40)
         }
-        .buttonStyle(.glass)
-        .buttonBorderShape(.circle)
+        .dfCircleButtonStyle()
     }
 }
 
@@ -141,24 +140,16 @@ private struct LightBoostButton: View {
             .foregroundStyle(isOn ? .black : DFColor.textPrimary)
             .frame(width: 40, height: 40)
 
-        if isOn {
-            Button(action: action) { label }
-                .buttonStyle(.glassProminent)
-                .tint(.white)
-                .buttonBorderShape(.circle)
-        } else {
-            Button(action: action) { label }
-                .buttonStyle(.glass)
-                .buttonBorderShape(.circle)
-        }
+        Button(action: action) { label }
+            .dfCircleButtonStyle(prominent: isOn)
     }
 }
 
 /// A soft white glow hugging the screen's own rounded-corner contour,
 /// standing in for a ring light so the TrueDepth camera's low-light face
 /// tracking has more to work with. A single stroked, blurred outline
-/// follows the screen shape continuously — no seams at the corners, no
-/// flat rectangle cutting across a rounded display — fading to nothing a
+/// follows the screen shape continuously – no seams at the corners, no
+/// flat rectangle cutting across a rounded display – fading to nothing a
 /// short distance in so it never washes out the UI in the center.
 private struct FaceLightBoost: View {
     var body: some View {
@@ -217,7 +208,7 @@ private struct ReadyStateView: View {
                     .foregroundStyle(DFColor.textSecondary)
                     .padding(.bottom, 40)
             } else {
-                GlassEffectContainer(spacing: 16) {
+                DFButtonGroup(spacing: 16) {
                     Button {
                         onStart()
                     } label: {
@@ -226,10 +217,8 @@ private struct ReadyStateView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                     }
-                    .buttonStyle(.glassProminent)
-                    .tint(.white)
-                    .foregroundStyle(.black)
-                    .glassEffectID("primary", in: namespace)
+                    .dfPrimaryButtonStyle()
+                    .dfGlassID("primary", in: namespace)
                 }
                 .padding(.horizontal, DFSpacing.screenPadding)
                 .padding(.bottom, 24)
@@ -247,21 +236,13 @@ private struct TrackingStateView: View {
     var body: some View {
         VStack(spacing: 8) {
             Spacer()
-
-            Text("\(reps)")
-                .font(.system(size: 96, weight: .heavy, design: .rounded))
-                .foregroundStyle(DFColor.textPrimary)
-                .contentTransition(.numericText())
-
+            ReflectedRepCounter(reps: reps)
             Text("reps")
                 .font(DFType.caption)
                 .foregroundStyle(DFColor.textSecondary)
-
             Spacer()
 
-            FatigueNotice(fatigued: fatigued)
-
-            GlassEffectContainer(spacing: 16) {
+            DFButtonGroup(spacing: 16) {
                 Button {
                     onEndSet()
                 } label: {
@@ -270,25 +251,66 @@ private struct TrackingStateView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
                 }
-                .buttonStyle(.glassProminent)
-                .tint(.white)
-                .foregroundStyle(.black)
-                .glassEffectID("primary", in: namespace)
+                .dfPrimaryButtonStyle()
+                .dfGlassID("primary", in: namespace)
             }
             .padding(.horizontal, DFSpacing.screenPadding)
             .padding(.bottom, 24)
+        }
+        // FatigueNotice floats in its own overlay, anchored to the bottom
+        // independent of the VStack's own Spacer-driven layout – sitting it
+        // inline between the two Spacers (the previous approach) let the
+        // VStack redistribute space around it the moment it appeared,
+        // visibly shoving the rep counter upward every time fatigue
+        // triggered.
+        .overlay(alignment: .bottom) {
+            FatigueNotice(fatigued: fatigued)
+                .padding(.bottom, 100)
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: fatigued)
     }
 }
 
-/// Sits inline between the rep count and the "end set" button — never over
-/// another control — and reserves no space until fatigue actually
+/// The rep count with a faded, flipped duplicate underneath it – like a
+/// number standing at the edge of still water – plus a spring-driven pop
+/// on every change instead of the flat digit-roll `.numericText()` gives
+/// on its own.
+private struct ReflectedRepCounter: View {
+    let reps: Int
+    @State private var popped = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            digit
+            digit
+                .scaleEffect(y: -1)
+                .mask(LinearGradient(colors: [.white, .clear], startPoint: .top, endPoint: .bottom))
+                .opacity(0.25)
+                .offset(y: -8)
+        }
+        .animation(.default, value: reps)
+        .onChange(of: reps) {
+            popped = true
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.5)) { popped = false }
+        }
+    }
+
+    private var digit: some View {
+        Text("\(reps)")
+            .font(.system(size: 96, weight: .heavy, design: .rounded))
+            .foregroundStyle(DFColor.textPrimary)
+            .contentTransition(.numericText(value: Double(reps)))
+            .scaleEffect(popped ? 1.12 : 1)
+    }
+}
+
+/// Sits inline between the rep count and the "end set" button – never over
+/// another control – and reserves no space until fatigue actually
 /// triggers, at which point it grows in with the surrounding spring
 /// animation on `fatigued` (declared on the parent VStack) rather than a
 /// separate opacity/offset transition of its own. Once fatigue is flagged
 /// it stays visible for the rest of the set (RepCounter never clears it
-/// early), so this never flickers in and out — dismissing it is a single,
+/// early), so this never flickers in and out – dismissing it is a single,
 /// deliberate action, not something that gets undone by the algorithm.
 private struct FatigueNotice: View {
     let fatigued: Bool
@@ -352,7 +374,7 @@ private struct RestingStateView: View {
 
             Spacer()
 
-            GlassEffectContainer(spacing: 16) {
+            DFButtonGroup(spacing: 16) {
                 VStack(spacing: 12) {
                     Button {
                         onNext()
@@ -362,10 +384,8 @@ private struct RestingStateView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                     }
-                    .buttonStyle(.glassProminent)
-                    .tint(.white)
-                    .foregroundStyle(.black)
-                    .glassEffectID("primary", in: namespace)
+                    .dfPrimaryButtonStyle()
+                    .dfGlassID("primary", in: namespace)
 
                     Button {
                         onFinish()
@@ -375,8 +395,8 @@ private struct RestingStateView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                     }
-                    .buttonStyle(.glass)
-                    .glassEffectID("secondary", in: namespace)
+                    .dfSecondaryButtonStyle()
+                    .dfGlassID("secondary", in: namespace)
                 }
             }
             .padding(.horizontal, DFSpacing.screenPadding)
@@ -434,7 +454,7 @@ private struct FinishedStateView: View {
 
             Spacer()
 
-            GlassEffectContainer(spacing: 16) {
+            DFButtonGroup(spacing: 16) {
                 Button {
                     NativeUIBridge.shared.pendingRepsFlight = PendingRepsFlight(reps: totalReps)
                     onDone()
@@ -444,10 +464,8 @@ private struct FinishedStateView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
                 }
-                .buttonStyle(.glassProminent)
-                .tint(.white)
-                .foregroundStyle(.black)
-                .glassEffectID("primary", in: namespace)
+                .dfPrimaryButtonStyle()
+                .dfGlassID("primary", in: namespace)
             }
             .padding(.horizontal, DFSpacing.screenPadding)
             .padding(.bottom, 24)

@@ -13,7 +13,7 @@ final class NativeUIBridge: ObservableObject {
     @Published var workoutState: WorkoutUIState = .ready(supported: true) {
         didSet {
             // Rep counting relies on the camera and the user's hands, not
-            // touch — the screen reads as idle to iOS the whole set, so the
+            // touch – the screen reads as idle to iOS the whole set, so the
             // system auto-lock (and Low Power Mode's more aggressive one)
             // turns the display off mid-rep unless we hold it open here.
             switch workoutState {
@@ -28,6 +28,7 @@ final class NativeUIBridge: ObservableObject {
     @Published var healthSyncEnabled: Bool = UserDefaults.standard.bool(forKey: NativeUIBridge.healthSyncKey)
     @Published var iCloudSyncEnabled: Bool = UserDefaults.standard.bool(forKey: NativeUIBridge.iCloudSyncKey)
     @Published var iCloudRestoreStatus: ICloudRestoreStatus = .idle
+    @Published var iCloudLastSyncedAt: Date? = ICloudBackupService.shared.lastSyncedAt
 
     private static let iCloudSyncKey = "icloud_sync_enabled"
 
@@ -100,7 +101,10 @@ final class NativeUIBridge: ObservableObject {
             result(nil)
         case "iCloudUpload":
             if iCloudSyncEnabled, let args = call.arguments as? [String: Any], let path = args["path"] as? String {
-                ICloudBackupService.shared.upload(fileAt: path)
+                ICloudBackupService.shared.upload(fileAt: path) { [weak self] syncedAt in
+                    guard let syncedAt else { return }
+                    DispatchQueue.main.async { self?.iCloudLastSyncedAt = syncedAt }
+                }
             }
             result(nil)
         default:
@@ -186,16 +190,16 @@ final class NativeUIBridge: ObservableObject {
 
     /// Downloads whatever backup is currently in this device's iCloud
     /// container and hands it to the same import path a manually picked
-    /// .dfbak file goes through — restore is always an explicit action the
+    /// .dfbak file goes through – restore is always an explicit action the
     /// user triggers from Settings, never automatic, so a fresh install
     /// never silently overwrites in-progress data.
     func restoreFromICloud() {
-        guard ICloudBackupService.shared.isAvailable else {
-            iCloudRestoreStatus = .failed
-            return
-        }
         iCloudRestoreStatus = .restoring
         Task {
+            guard await ICloudBackupService.shared.isAvailable else {
+                await MainActor.run { iCloudRestoreStatus = .failed }
+                return
+            }
             guard let path = await ICloudBackupService.shared.downloadLatest() else {
                 await MainActor.run { iCloudRestoreStatus = .noBackupFound }
                 return

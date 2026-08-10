@@ -25,7 +25,7 @@ class RepCounter {
   /// How many reps of a session are used to measure the user's actual
   /// range of motion before the threshold adapts to it. A fixed threshold
   /// works for a full-depth push-up with the phone flat on the floor, but
-  /// an angled phone or a shorter range of motion needs a smaller one — and
+  /// an angled phone or a shorter range of motion needs a smaller one – and
   /// a threshold set for someone with a huge range of motion is needlessly
   /// strict for someone with a smaller one, and vice versa.
   final int calibrationRepCount;
@@ -45,7 +45,7 @@ class RepCounter {
   /// session, so the caller can persist the newly learned thresholds.
   void Function(double downThreshold, double upThreshold)? onCalibrated;
 
-  /// Reps counted before fatigue detection kicks in — the first few reps of
+  /// Reps counted before fatigue detection kicks in – the first few reps of
   /// a set set the pace baseline and are too noisy on their own to compare
   /// against.
   final int fatigueRepThreshold;
@@ -54,12 +54,19 @@ class RepCounter {
   /// reps is this many times slower than the set's baseline pace (average
   /// of its first [fatigueRepThreshold] reps). Comparing a rolling average
   /// instead of a single rep means one noisy sample (camera jitter, a brief
-  /// pause to adjust position) can't flip the flag on its own — it takes a
+  /// pause to adjust position) can't flip the flag on its own – it takes a
   /// sustained slowdown across several reps in a row.
   final double fatigueSlowdownRatio;
 
   /// How many of the most recent reps are averaged for the fatigue check.
   final int fatigueWindow;
+
+  /// Fraction of the gap between the current baseline and a lower up-phase
+  /// sample that gets pulled in per sample. Small enough that one spike
+  /// (a head bob) barely moves the baseline in a single frame, but repeated
+  /// samples at the new, lower level pull it most of the way down within
+  /// the handful of frames a real up-phase pause lasts.
+  static const double _baselineDecay = 0.15;
 
   double? _baseline;
   double? _minDuringDown;
@@ -82,7 +89,7 @@ class RepCounter {
     _lastRepDurationMs = null;
     repDurationsMs.clear();
     _fatigued = false;
-    // Calibration state deliberately survives reset() — it's carried across
+    // Calibration state deliberately survives reset() – it's carried across
     // sets within the same workout screen session by the caller re-using
     // this instance, so a set that ends right after calibrating doesn't
     // throw away what was just learned.
@@ -93,15 +100,24 @@ class RepCounter {
   RepEvent? onDistanceSample(double distance, int timestampMs) {
     _baseline ??= distance;
 
-    // Track the highest point (largest distance) seen since the last rep
-    // instead of snapping the baseline to whatever sample happens to land
-    // when the phase flips back to up. Snapping meant a single rep where
-    // the user didn't fully extend their arms — normal once fatigue sets
-    // in — permanently shrank the baseline, so every following rep had less
-    // and less amplitude to work with until none could cross downThreshold
-    // again and counting silently stalled a few reps in.
-    if (_phase == RepPhase.up && distance > _baseline!) {
-      _baseline = distance;
+    // Track the top-of-rep level with decay instead of either snapping to
+    // whatever sample lands when the phase flips back to up, or latching
+    // onto the highest point ever seen. Pure snapping meant one rep where
+    // the user didn't fully extend their arms permanently shrank the
+    // baseline, stalling the counter a few reps later. Pure latching (the
+    // previous fix) had the opposite bug: a single higher-than-usual sample
+    // – a head bob, camera jitter – raised the baseline forever, so every
+    // later rep had to clear an ever-increasing bar. Rising fast but
+    // decaying slowly gets both: a genuinely higher extension is picked up
+    // immediately, but a one-off spike relaxes back down over the next
+    // couple of up-phase samples instead of becoming the new permanent
+    // floor.
+    if (_phase == RepPhase.up) {
+      if (distance > _baseline!) {
+        _baseline = distance;
+      } else {
+        _baseline = _baseline! - (_baseline! - distance) * _baselineDecay;
+      }
     }
 
     final delta = _baseline! - distance;
@@ -133,7 +149,7 @@ class RepCounter {
         if (minDuringDown != null) _recordAmplitude(_baseline! - minDuringDown);
         // Once flagged, fatigue stays on for the rest of the set instead of
         // flickering off the moment one rep happens to land back near the
-        // baseline pace — a real tired set doesn't suddenly stop being tired.
+        // baseline pace – a real tired set doesn't suddenly stop being tired.
         _fatigued = _fatigued || _isFatigued();
         return RepEvent(reps: reps, durationMs: durationMs, fatigued: _fatigued);
       }
@@ -144,7 +160,7 @@ class RepCounter {
 
   /// Feeds a completed rep's actual range of motion into calibration. Once
   /// [calibrationRepCount] reps have been measured, the thresholds are set
-  /// relative to the average amplitude actually observed — clamped to a
+  /// relative to the average amplitude actually observed – clamped to a
   /// sane range so a wildly noisy first few reps can't produce a threshold
   /// too tight or too loose to ever work.
   void _recordAmplitude(double amplitude) {

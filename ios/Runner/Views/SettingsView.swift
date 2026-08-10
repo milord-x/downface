@@ -22,17 +22,32 @@ struct SettingsView: View {
         return rounded % (24 * 60)
     }
 
+    /// `Locale.current.hourCycle` reads the user's actual 24-hour toggle
+    /// (Settings → General → Date & Time), not just their region's default
+    /// – the previous check built a "j" template with
+    /// `DateFormatter.setLocalizedDateFormatFromTemplate` and looked for a
+    /// lowercase "a" in the result, which some locales (Russian among them)
+    /// don't reliably produce even when the system clock is genuinely
+    /// 12-hour, so it always fell through to 24-hour and showed the AM/PM
+    /// wheel regardless of what the user actually had set.
     private var uses24HourClock: Bool {
-        let formatter = DateFormatter()
-        formatter.locale = Locale.autoupdatingCurrent
-        formatter.setLocalizedDateFormatFromTemplate("j")
-        return !formatter.dateFormat.contains("a")
+        switch Locale.autoupdatingCurrent.hourCycle {
+        case .zeroToTwentyThree, .oneToTwentyFour: return true
+        case .zeroToEleven, .oneToTwelve: return false
+        @unknown default: return false
+        }
     }
 
     var body: some View {
-        NavigationStack {
+        ZStack(alignment: .top) {
+            DFColor.background.ignoresSafeArea()
+
             ScrollView {
                 VStack(spacing: 24) {
+                    // Room for the back button floating on top so it never
+                    // sits over the first card's content.
+                    Color.clear.frame(height: 44)
+
                     appearanceCard
                     appIconCard
                     remindersCard
@@ -67,23 +82,29 @@ struct SettingsView: View {
                 .padding(DFSpacing.screenPadding)
                 .padding(.bottom, 32)
             }
-            .background(DFColor.background.ignoresSafeArea())
-            .navigationTitle("settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.hidden, for: .navigationBar)
-            .alert("Delete all data", isPresented: $showWipeConfirm) {
-                Button("Cancel", role: .cancel) {}
-                Button("Delete", role: .destructive) {
-                    bridge.requestWipe()
-                    statusMessage = "All data deleted"
-                }
-            } message: {
-                Text("This removes every workout on this device. This cannot be undone.")
+
+            // A round glass back button standing in for the sheet's usual
+            // swipe-down-to-dismiss – that gesture works fine once you know
+            // it's there, but nothing on screen hints at it. A control that
+            // looks like the back button used everywhere else in the app
+            // reads as "there's a way out" without the user having to guess.
+            SettingsBackButton { dismiss() }
+                .padding(.top, 8)
+                .padding(.leading, DFSpacing.screenPadding)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .alert("Delete all data", isPresented: $showWipeConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                bridge.requestWipe()
+                statusMessage = "All data deleted"
             }
-            .sheet(isPresented: $showAddTime) {
-                addTimeSheet
-                    .preferredColorScheme(themeManager.theme.colorScheme)
-            }
+        } message: {
+            Text("This removes every workout on this device. This cannot be undone.")
+        }
+        .sheet(isPresented: $showAddTime) {
+            addTimeSheet
+                .preferredColorScheme(themeManager.theme.colorScheme)
         }
     }
 
@@ -298,6 +319,18 @@ struct SettingsView: View {
                 .foregroundStyle(DFColor.textSecondary)
                 .padding(.top, 2)
 
+            // The toggle used to give no sign the sync was actually
+            // happening in the background – turning it on and never seeing
+            // anything change read as "probably broken" even when it
+            // wasn't. A relative timestamp updated the moment a real upload
+            // lands makes that background activity visible.
+            if bridge.iCloudSyncEnabled {
+                Text(lastSyncedText)
+                    .font(DFType.caption)
+                    .foregroundStyle(DFColor.textTertiary)
+                    .padding(.top, 2)
+            }
+
             SettingsDivider()
 
             Button {
@@ -325,6 +358,16 @@ struct SettingsView: View {
         case .noBackupFound: return "No backup found in iCloud"
         case .failed: return "iCloud isn't available"
         }
+    }
+
+    private var lastSyncedText: String {
+        guard let syncedAt = bridge.iCloudLastSyncedAt else {
+            return NSLocalizedString("Not synced yet", comment: "")
+        }
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        let relative = formatter.localizedString(for: syncedAt, relativeTo: Date())
+        return String(format: NSLocalizedString("Last synced %@", comment: "e.g. Last synced 2m ago"), relative)
     }
 
     private var healthCard: some View {
@@ -514,6 +557,20 @@ private enum AppIconOption: String, CaseIterable, Identifiable {
         case .arrows: return "AltIconArrowsPreview"
         case .hands: return "AltIconHandsPreview"
         }
+    }
+}
+
+private struct SettingsBackButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "chevron.left")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(DFColor.textPrimary)
+                .frame(width: 40, height: 40)
+        }
+        .dfCircleButtonStyle()
     }
 }
 

@@ -48,7 +48,7 @@ void main() {
 
   test('counts a shallow-amplitude rep with the default thresholds', () {
     // Not every setup gives the full ~15cm swing used elsewhere in this
-    // file — an angled phone or a shorter range of motion can mean the
+    // file – an angled phone or a shorter range of motion can mean the
     // face-to-camera distance only moves a few centimeters. The default
     // downThreshold/upThreshold need to be low enough to still catch that.
     final counter = RepCounter(minRepMs: 0);
@@ -109,6 +109,31 @@ void main() {
       sample(0.30);
       sample(0.15);
       sample(0.30);
+    }
+
+    expect(counter.reps, 10);
+  });
+
+  test('does not raise the bar forever when the top-of-rep drifts slightly higher each time', () {
+    // A user rarely returns to the exact same height every rep – small
+    // upward drift (a head bob, camera jitter, gradually straightening
+    // more) used to get latched as the new permanent baseline, so each
+    // following rep had to clear an ever-increasing bar until real reps
+    // could no longer cross downThreshold at all.
+    final counter = RepCounter(minRepMs: 0);
+    var t = 0;
+    void sample(double d) {
+      counter.onDistanceSample(d, t);
+      t += 200;
+    }
+
+    // Top of each rep creeps up by 2mm every time: 0.30, 0.302, 0.304 ...
+    var top = 0.30;
+    for (var i = 0; i < 10; i++) {
+      sample(top);
+      sample(0.15);
+      sample(top);
+      top += 0.002;
     }
 
     expect(counter.reps, 10);
@@ -175,7 +200,7 @@ void main() {
     sample(0.30);
 
     // One rep with a brief pause (e.g. adjusting position), then straight
-    // back to the normal pace — diluted by the other fast reps in the
+    // back to the normal pace – diluted by the other fast reps in the
     // rolling window, so it shouldn't trip fatigue on its own.
     sample(0.30);
     for (var i = 0; i < 5; i++) {
@@ -221,7 +246,7 @@ void main() {
     slowRep();
     expect(last?.fatigued, true);
 
-    // Back to a fast rep — a real tired set doesn't suddenly stop being
+    // Back to a fast rep – a real tired set doesn't suddenly stop being
     // tired because one rep happened to land quicker.
     sample(0.30);
     sample(0.15);

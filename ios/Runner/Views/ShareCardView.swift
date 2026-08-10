@@ -18,7 +18,7 @@ struct ShareCardView: View {
                 Spacer()
 
                 if let cardFileURL {
-                    // The message: parameter is deliberately omitted — several
+                    // The message: parameter is deliberately omitted – several
                     // share targets (Telegram among them) send it as a
                     // separate text message instead of an image caption, so
                     // the recipient gets two messages instead of one. Sharing
@@ -33,9 +33,7 @@ struct ShareCardView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                     }
-                    .buttonStyle(.glassProminent)
-                    .tint(DFColor.textPrimary)
-                    .foregroundStyle(DFColor.background)
+                    .dfPrimaryButtonStyle()
                     .padding(.horizontal, DFSpacing.screenPadding)
                     .padding(.bottom, 24)
                 }
@@ -134,7 +132,7 @@ private struct StatCard: View {
     }
 }
 
-/// A compact, non-interactive 12-week activity grid for the share card —
+/// A compact, non-interactive 12-week activity grid for the share card –
 /// same "highest point stays anchored on today" week math as the full
 /// StatsView grid, just fewer weeks and no tap handling.
 private struct MiniActivityGrid: View {
