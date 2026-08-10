@@ -29,6 +29,10 @@ struct StatsView: View {
                 if hasWorkouts {
                     ScrollView {
                         VStack(spacing: 16) {
+                            // Room for the floating back/share buttons so
+                            // they never sit on top of the first card.
+                            Color.clear.frame(height: 56)
+
                             // Paged instead of stacked: activity already
                             // scrolls sideways on its own (twenty weeks
                             // wide), and progress needs horizontal drags to
@@ -43,18 +47,19 @@ struct StatsView: View {
                             // (no outer horizontal padding) so a swipe
                             // starting near the screen edge still lands on
                             // it; each card pads itself in from there.
+                            //
+                            // Both pages share one fixed height regardless
+                            // of how much detail content they're showing –
+                            // each card scrolls its own overflow internally
+                            // instead of growing, so the page indicator
+                            // dots (sized to the TabView, not to whichever
+                            // page is visible) never jump between pages.
                             TabView {
                                 activityCard
                                 weeklyProgressCard
                             }
                             .tabViewStyle(.page(indexDisplayMode: .always))
                             .indexViewStyle(.page(backgroundDisplayMode: .always))
-                            // Tall enough for either card with its detail
-                            // panel open (a day with several sets logged, or
-                            // a selected week) – a fixed page height can't
-                            // grow with content the way a plain VStack
-                            // would, so this errs generous rather than
-                            // clipping a full sets list.
                             .frame(height: 420)
 
                             HStack(spacing: 12) {
@@ -75,6 +80,7 @@ struct StatsView: View {
                             Color.clear.frame(height: 4)
                         }
                     }
+                    .scrollIndicators(.visible)
                 } else {
                     EmptyStatsView()
                 }
@@ -105,7 +111,7 @@ struct StatsView: View {
                 .foregroundStyle(DFColor.textPrimary)
             ActivityGrid(snapshot: snapshot)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(DFSpacing.cardPadding)
         .padding(.bottom, 32)
         .dfCardSurface(cornerRadius: 28)
@@ -119,7 +125,7 @@ struct StatsView: View {
                 .foregroundStyle(DFColor.textPrimary)
             WeeklyProgressChart(snapshot: snapshot)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(DFSpacing.cardPadding)
         .padding(.bottom, 32)
         .dfCardSurface(cornerRadius: 28)
@@ -400,6 +406,7 @@ private struct ActivityGrid: View {
     private let weeks = 20
 
     @State private var selectedDate: Date?
+    @State private var showFullDay = false
 
     private var maxReps: Int {
         max(snapshot.workouts.map { $0.totalReps }.max() ?? 1, 1)
@@ -422,6 +429,8 @@ private struct ActivityGrid: View {
         let daysSinceMonday = (weekdayOfToday + 5) % 7
         let lastMonday = calendar.date(byAdding: .day, value: -daysSinceMonday, to: today) ?? today
         let firstMonday = calendar.date(byAdding: .day, value: -(weeks - 1) * 7, to: lastMonday) ?? lastMonday
+        // Defaults to today so the card never opens on an empty detail row.
+        let initialDate = selectedDate ?? today
 
         return VStack(alignment: .leading, spacing: 10) {
             ScrollView(.horizontal, showsIndicators: false) {
@@ -439,6 +448,10 @@ private struct ActivityGrid: View {
                                     RoundedRectangle(cornerRadius: 4)
                                         .fill(isFuture ? Color.clear : intensity(for: reps))
                                         .frame(width: 14, height: 14)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 4)
+                                                .stroke(DFColor.textPrimary.opacity(calendar.isDate(date, inSameDayAs: initialDate) ? 0.9 : 0), lineWidth: 1.5)
+                                        )
                                         .onTapGesture {
                                             guard !isFuture else { return }
                                             selectedDate = date
@@ -451,9 +464,16 @@ private struct ActivityGrid: View {
             }
             .defaultScrollAnchor(.trailing)
 
-            if let selectedDate {
-                dayDetail(date: selectedDate, reps: snapshot.reps(on: selectedDate))
-            }
+            // A fixed-height scroll instead of letting the sets list push
+            // the card taller – with the page indicator sized to this
+            // page's own height, a growing card would either clip under
+            // the dots or shove the sibling page's dots around as you
+            // swipe. "show all" breaks out to a full sheet for a day with
+            // more sets than the card can show at once.
+            dayDetail(date: initialDate, reps: snapshot.reps(on: initialDate))
+        }
+        .sheet(isPresented: $showFullDay) {
+            DayDetailSheet(date: initialDate, sets: setsOn(initialDate), reps: snapshot.reps(on: initialDate))
         }
     }
 
@@ -483,10 +503,15 @@ private struct ActivityGrid: View {
             .sorted { $0.startedAt < $1.startedAt }
     }
 
+    /// Sets beyond this count would push the card past its fixed height,
+    /// so the list stops here and hands off to `DayDetailSheet` instead.
+    private static let inlineSetLimit = 3
+
     private func dayDetail(date: Date, reps: Int) -> some View {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMM d"
         let sets = setsOn(date)
+        let overflow = sets.count > Self.inlineSetLimit
 
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -506,23 +531,15 @@ private struct ActivityGrid: View {
                             .font(DFType.caption.weight(.semibold))
                             .foregroundStyle(DFColor.textPrimary)
                         Spacer()
-                    }
-
-                    ForEach(Array(sets.enumerated()), id: \.offset) { index, set in
-                        HStack {
-                            Text(setLabelText(index + 1))
-                                .font(DFType.caption)
-                                .foregroundStyle(DFColor.textTertiary)
-                            Spacer()
-                            if set.restBeforeSeconds > 0 {
-                                Text(restText(set.restBeforeSeconds))
-                                    .font(DFType.caption)
-                                    .foregroundStyle(DFColor.textTertiary)
-                            }
-                            Text(repsText(set.reps))
-                                .font(DFType.caption.weight(.medium))
+                        if overflow {
+                            Button("show all") { showFullDay = true }
+                                .font(DFType.caption.weight(.semibold))
                                 .foregroundStyle(DFColor.textSecondary)
                         }
+                    }
+
+                    ForEach(Array(sets.prefix(Self.inlineSetLimit).enumerated()), id: \.offset) { index, set in
+                        setRow(index: index, set: set)
                     }
                 }
                 .padding(.top, 2)
@@ -531,8 +548,23 @@ private struct ActivityGrid: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(DFColor.cardFillStrong, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .transition(.opacity.combined(with: .move(edge: .top)))
-        .animation(.smooth, value: date)
+    }
+
+    private func setRow(index: Int, set: WorkoutSetSnapshot) -> some View {
+        HStack {
+            Text(setLabelText(index + 1))
+                .font(DFType.caption)
+                .foregroundStyle(DFColor.textTertiary)
+            Spacer()
+            if set.restBeforeSeconds > 0 {
+                Text(restText(set.restBeforeSeconds))
+                    .font(DFType.caption)
+                    .foregroundStyle(DFColor.textTertiary)
+            }
+            Text(repsText(set.reps))
+                .font(DFType.caption.weight(.medium))
+                .foregroundStyle(DFColor.textSecondary)
+        }
     }
 
     private func monthLabels(calendar: Calendar, firstMonday: Date) -> some View {
@@ -557,6 +589,65 @@ private struct ActivityGrid: View {
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(DFColor.textTertiary)
                     .frame(width: width, alignment: .leading)
+            }
+        }
+    }
+}
+
+/// Full, unclipped view of a day's sets – reached from "show all" once a
+/// day has more sets than `ActivityGrid`'s fixed-height card can inline.
+private struct DayDetailSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let date: Date
+    let sets: [WorkoutSetSnapshot]
+    let reps: Int
+
+    private func repsText(_ reps: Int) -> String {
+        let key = reps == 1 ? "%lld rep" : "%lld reps"
+        return String(format: NSLocalizedString(key, comment: ""), reps)
+    }
+
+    private func setLabelText(_ index: Int) -> String {
+        String(format: NSLocalizedString("set %lld", comment: ""), index)
+    }
+
+    private func restText(_ seconds: Int) -> String {
+        String(format: NSLocalizedString("rest %llds", comment: ""), seconds)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(Array(sets.enumerated()), id: \.offset) { index, set in
+                        HStack {
+                            Text(setLabelText(index + 1))
+                                .font(DFType.body)
+                                .foregroundStyle(DFColor.textTertiary)
+                            Spacer()
+                            if set.restBeforeSeconds > 0 {
+                                Text(restText(set.restBeforeSeconds))
+                                    .font(DFType.caption)
+                                    .foregroundStyle(DFColor.textTertiary)
+                            }
+                            Text(repsText(set.reps))
+                                .font(DFType.body.weight(.semibold))
+                                .foregroundStyle(DFColor.textPrimary)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(DFColor.cardFillStrong, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                }
+                .padding(DFSpacing.screenPadding)
+            }
+            .background(DFColor.background.ignoresSafeArea())
+            .navigationTitle(repsText(reps))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("close") { dismiss() }
+                }
             }
         }
     }
