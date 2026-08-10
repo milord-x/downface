@@ -29,10 +29,6 @@ struct StatsView: View {
                 if hasWorkouts {
                     ScrollView {
                         VStack(spacing: 16) {
-                            // Room for the floating back/share buttons so
-                            // they never sit on top of the first card.
-                            Color.clear.frame(height: 56)
-
                             // Paged instead of stacked: activity already
                             // scrolls sideways on its own (twenty weeks
                             // wide), and progress needs horizontal drags to
@@ -111,7 +107,7 @@ struct StatsView: View {
                 .foregroundStyle(DFColor.textPrimary)
             ActivityGrid(snapshot: snapshot)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(DFSpacing.cardPadding)
         .padding(.bottom, 32)
         .dfCardSurface(cornerRadius: 28)
@@ -437,9 +433,9 @@ private struct ActivityGrid: View {
                 VStack(alignment: .leading, spacing: 6) {
                     monthLabels(calendar: calendar, firstMonday: firstMonday)
 
-                    HStack(alignment: .top, spacing: 4) {
+                    HStack(alignment: .top, spacing: 5) {
                         ForEach(0..<weeks, id: \.self) { week in
-                            VStack(spacing: 4) {
+                            VStack(spacing: 5) {
                                 ForEach(0..<7, id: \.self) { day in
                                     let date = calendar.date(byAdding: .day, value: week * 7 + day, to: firstMonday) ?? firstMonday
                                     let isFuture = date > today
@@ -447,7 +443,7 @@ private struct ActivityGrid: View {
 
                                     RoundedRectangle(cornerRadius: 4)
                                         .fill(isFuture ? Color.clear : intensity(for: reps))
-                                        .frame(width: 14, height: 14)
+                                        .frame(width: 18, height: 18)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 4)
                                                 .stroke(DFColor.textPrimary.opacity(calendar.isDate(date, inSameDayAs: initialDate) ? 0.9 : 0), lineWidth: 1.5)
@@ -584,7 +580,7 @@ private struct ActivityGrid: View {
         return HStack(alignment: .top, spacing: 0) {
             ForEach(Array(labels.enumerated()), id: \.offset) { index, item in
                 let nextWeek = index + 1 < labels.count ? labels[index + 1].week : weeks
-                let width = CGFloat(nextWeek - item.week) * 18
+                let width = CGFloat(nextWeek - item.week) * 23
                 Text(item.name)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(DFColor.textTertiary)
