@@ -29,10 +29,6 @@ struct StatsView: View {
                 if hasWorkouts {
                     ScrollView {
                         VStack(spacing: 16) {
-                            // Room for the back button floating on top so it
-                            // never sits over the first card's content.
-                            Color.clear.frame(height: 44)
-
                             // Paged instead of stacked: activity already
                             // scrolls sideways on its own (twenty weeks
                             // wide), and progress needs horizontal drags to
