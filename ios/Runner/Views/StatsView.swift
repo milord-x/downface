@@ -55,7 +55,7 @@ struct StatsView: View {
                                 activityCard
                                 weeklyProgressCard
                             }
-                            .tabViewStyle(.page(indexPrefix: .never))
+                            .tabViewStyle(.page(indexDisplayMode: .always))
                             .indexViewStyle(.page(backgroundDisplayMode: .always))
                             // Tall enough for either card with its detail
                             // panel open (a day with several sets logged, or
