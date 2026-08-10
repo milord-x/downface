@@ -25,10 +25,27 @@ struct StatsView: View {
         ZStack(alignment: .top) {
             DFColor.background.ignoresSafeArea()
 
+            // A blurred fog over the status bar, fading to nothing by the
+            // time content starts – on a black background a flat color fade
+            // is invisible, so this needs an actual material to read as fog
+            // rather than a hard-clipped edge.
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .frame(height: 120)
+                .mask(LinearGradient(colors: [.black, .clear], startPoint: .top, endPoint: .bottom))
+                .ignoresSafeArea(edges: .top)
+                .allowsHitTesting(false)
+
             Group {
                 if hasWorkouts {
                     ScrollView {
                         VStack(spacing: 16) {
+                            // Clears the floating back/share buttons – the
+                            // card's own background still runs up under the
+                            // status bar (the fog above), only its text
+                            // content needs to start below the buttons.
+                            Color.clear.frame(height: 56)
+
                             // Paged instead of stacked: activity already
                             // scrolls sideways on its own (twenty weeks
                             // wide), and progress needs horizontal drags to

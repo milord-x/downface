@@ -42,11 +42,22 @@ struct SettingsView: View {
         ZStack(alignment: .top) {
             DFColor.background.ignoresSafeArea()
 
+            // A blurred fog over the status bar, fading to nothing by the
+            // time content starts – on a black background a flat color fade
+            // is invisible, so this needs an actual material to read as fog
+            // rather than a hard-clipped edge.
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .frame(height: 120)
+                .mask(LinearGradient(colors: [.black, .clear], startPoint: .top, endPoint: .bottom))
+                .ignoresSafeArea(edges: .top)
+                .allowsHitTesting(false)
+
             ScrollView {
                 VStack(spacing: 24) {
                     // Room for the back button floating on top so it never
                     // sits over the first card's content.
-                    Color.clear.frame(height: 44)
+                    Color.clear.frame(height: 56)
 
                     appearanceCard
                     appIconCard
