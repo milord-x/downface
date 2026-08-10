@@ -5,13 +5,6 @@ struct StatsView: View {
     @ObservedObject var bridge = NativeUIBridge.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showShareCard = false
-    /// Tapping a week in the progress chart is the only thing that sets
-    /// this – it flows one direction, into the activity grid below, which
-    /// outlines the matching seven days. The grid's own day taps only open
-    /// that day's own detail card and never write back here: letting taps
-    /// in either view move the other's selection made two blocks react to
-    /// one tap, which read as broken rather than connected.
-    @State private var highlightedWeekStart: Date?
 
     private var snapshot: AppSnapshot { bridge.snapshot }
     private var hasWorkouts: Bool { !snapshot.workouts.isEmpty }
@@ -50,7 +43,10 @@ struct StatsView: View {
                             // reps or dragging past the intended week. A
                             // full-bleed page per card removes that fight
                             // entirely: a swipe here can only mean "next
-                            // card".
+                            // card". The TabView itself spans edge-to-edge
+                            // (no outer horizontal padding) so a swipe
+                            // starting near the screen edge still lands on
+                            // it; each card pads itself in from there.
                             TabView {
                                 activityCard
                                 weeklyProgressCard
@@ -69,16 +65,19 @@ struct StatsView: View {
                                 MetricCard(label: "avg rep", value: String(format: "%.1fs", avgRepSeconds))
                                 MetricCard(label: "avg rest", value: "\(Int(avgRestSeconds))s")
                             }
+                            .padding(.horizontal, DFSpacing.screenPadding)
                             HStack(spacing: 12) {
                                 MetricCard(label: "longest streak", value: "\(snapshot.streak.longest)d")
                                 MetricCard(label: "total workouts", value: "\(snapshot.workouts.count)")
                             }
+                            .padding(.horizontal, DFSpacing.screenPadding)
                             HStack(spacing: 12) {
                                 MetricCard(label: "best set", value: "\(snapshot.bestSingleSet)")
                                 MetricCard(label: "best day", value: "\(snapshot.bestSingleDay)")
                             }
+                            .padding(.horizontal, DFSpacing.screenPadding)
+                            Color.clear.frame(height: 4)
                         }
-                        .padding(DFSpacing.screenPadding)
                     }
                 } else {
                     EmptyStatsView()
@@ -108,11 +107,13 @@ struct StatsView: View {
             Text("activity")
                 .font(DFType.title)
                 .foregroundStyle(DFColor.textPrimary)
-            ActivityGrid(snapshot: snapshot, highlightedWeekStart: highlightedWeekStart)
+            ActivityGrid(snapshot: snapshot)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
+        .padding(.bottom, 32)
         .dfCardSurface(cornerRadius: 28)
+        .padding(.horizontal, DFSpacing.screenPadding)
     }
 
     private var weeklyProgressCard: some View {
@@ -120,11 +121,13 @@ struct StatsView: View {
             Text("progress by week")
                 .font(DFType.title)
                 .foregroundStyle(DFColor.textPrimary)
-            WeeklyProgressChart(snapshot: snapshot, selectedWeekStart: $highlightedWeekStart)
+            WeeklyProgressChart(snapshot: snapshot)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DFSpacing.cardPadding)
+        .padding(.bottom, 32)
         .dfCardSurface(cornerRadius: 28)
+        .padding(.horizontal, DFSpacing.screenPadding)
     }
 }
 
@@ -194,7 +197,7 @@ private struct MetricCard: View {
 
 private struct WeeklyProgressChart: View {
     let snapshot: AppSnapshot
-    @Binding var selectedWeekStart: Date?
+    @State private var selectedWeekStart: Date?
     private let weeksShown = 12
 
     private struct WeekPoint: Identifiable {
@@ -398,13 +401,6 @@ private struct WeeklyProgressChart: View {
 
 private struct ActivityGrid: View {
     let snapshot: AppSnapshot
-    /// Read-only: set only by tapping a week in the progress chart above.
-    /// Days within this week get an outline so the user can see which
-    /// seven cells that week covers. Tapping a cell here only opens that
-    /// day's own detail below – it never changes this highlight, so a tap
-    /// in this view can't also move something in the chart. One direction,
-    /// no crossed wires.
-    let highlightedWeekStart: Date?
     private let weeks = 20
 
     @State private var selectedDate: Date?
@@ -438,9 +434,6 @@ private struct ActivityGrid: View {
 
                     HStack(alignment: .top, spacing: 4) {
                         ForEach(0..<weeks, id: \.self) { week in
-                            let weekStart = calendar.date(byAdding: .day, value: week * 7, to: firstMonday) ?? firstMonday
-                            let isHighlightedWeek = highlightedWeekStart.map { calendar.isDate($0, inSameDayAs: weekStart) } ?? false
-
                             VStack(spacing: 4) {
                                 ForEach(0..<7, id: \.self) { day in
                                     let date = calendar.date(byAdding: .day, value: week * 7 + day, to: firstMonday) ?? firstMonday
@@ -450,10 +443,6 @@ private struct ActivityGrid: View {
                                     RoundedRectangle(cornerRadius: 4)
                                         .fill(isFuture ? Color.clear : intensity(for: reps))
                                         .frame(width: 14, height: 14)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 4)
-                                                .stroke(DFColor.textPrimary.opacity(isHighlightedWeek ? 0.9 : 0), lineWidth: 1.5)
-                                        )
                                         .onTapGesture {
                                             guard !isFuture else { return }
                                             selectedDate = date
