@@ -393,6 +393,8 @@
       });
     }
 
+    let glassInstance = null;
+
     const currentLang = detectLang();
     applyLang(currentLang);
 
@@ -404,11 +406,17 @@
       if (code === currentLang) opt.selected = true;
       langSelect.appendChild(opt);
     });
-    langSelect.addEventListener("change", () => applyLang(langSelect.value));
+    langSelect.addEventListener("change", () => {
+      applyLang(langSelect.value);
+      requestAnimationFrame(() => glassInstance?.markChanged());
+    });
 
     applyTheme(detectTheme());
     document.querySelectorAll("#theme-toggle button").forEach(btn => {
-      btn.addEventListener("click", () => applyTheme(btn.dataset.themeChoice));
+      btn.addEventListener("click", () => {
+        applyTheme(btn.dataset.themeChoice);
+        setTimeout(() => glassInstance?.markChanged(), 220);
+      });
     });
 
     import('https://cdn.jsdelivr.net/npm/@ybouane/liquidglass@1.0.3/dist/index.js')
@@ -421,6 +429,7 @@
           document.getElementById('glass-theme'),
         ],
       }))
+      .then(instance => { glassInstance = instance; })
       .catch(err => {
         console.warn('LiquidGlass unavailable, falling back to flat cards', err);
         document.body.classList.add('no-glass');
