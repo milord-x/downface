@@ -50,7 +50,9 @@
     margin: 0;
     padding: 0;
     min-height: 100%;
+    max-width: 100%;
     background: var(--bg);
+    overflow-x: hidden;
   }
 
   body {
@@ -177,6 +179,10 @@
     padding: 6px 10px;
     -webkit-appearance: none;
     appearance: none;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .theme-toggle {
