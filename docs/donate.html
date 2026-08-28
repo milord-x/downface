@@ -91,9 +91,9 @@
     filter: blur(60px);
   }
 
-  #bg-tint .b1 { width: 60vw; height: 60vw; top: -10vw; left: -20vw; background: var(--text-primary); opacity: 0.05; }
-  #bg-tint .b2 { width: 55vw; height: 55vw; bottom: 5vh; right: -18vw; background: var(--text-primary); opacity: 0.04; }
-  #bg-tint .b3 { width: 40vw; height: 40vw; top: 45%; left: 55%; background: var(--text-primary); opacity: 0.03; }
+  #bg-tint .b1 { width: 65vw; height: 65vw; top: -12vw; left: -22vw; background: var(--text-primary); opacity: 0.16; }
+  #bg-tint .b2 { width: 60vw; height: 60vw; bottom: 0; right: -20vw; background: var(--text-primary); opacity: 0.13; }
+  #bg-tint .b3 { width: 45vw; height: 45vw; top: 40%; left: 50%; background: var(--text-primary); opacity: 0.1; }
 
   /* Every direct child of #root below sits above the tint layer and
      shares the same max width so the page reads as one column. */
@@ -107,8 +107,9 @@
 
   #bg-tint { max-width: none; }
 
-  .icon {
+  #root > .icon {
     width: 76px;
+    max-width: 76px;
     height: 76px;
     border-radius: 20px;
     margin: 12px auto 24px;
