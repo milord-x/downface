@@ -4,10 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Downface – Say Thanks</title>
 <style>
-  :root { color-scheme: dark; }
+  :root {
+    --bg: #ffffff;
+    --text-primary: #000000;
+    --text-secondary: rgba(0,0,0,0.6);
+    --text-tertiary: rgba(0,0,0,0.38);
+    --divider: rgba(0,0,0,0.12);
+    --card-fill: rgba(0,0,0,0.06);
+    --card-fill-strong: rgba(0,0,0,0.08);
+    --icon-fill: #000000;
+    --icon-glyph: #ffffff;
+  }
+
+  html[data-theme="dark"] {
+    --bg: #000000;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255,255,255,0.6);
+    --text-tertiary: rgba(255,255,255,0.38);
+    --divider: rgba(255,255,255,0.12);
+    --card-fill: rgba(255,255,255,0.06);
+    --card-fill-strong: rgba(255,255,255,0.08);
+    --icon-fill: #ffffff;
+    --icon-glyph: #000000;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      --bg: #000000;
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255,255,255,0.6);
+      --text-tertiary: rgba(255,255,255,0.38);
+      --divider: rgba(255,255,255,0.12);
+      --card-fill: rgba(255,255,255,0.06);
+      --card-fill-strong: rgba(255,255,255,0.08);
+      --icon-fill: #ffffff;
+      --icon-glyph: #000000;
+    }
+  }
 
   * {
     box-sizing: border-box;
@@ -17,232 +52,312 @@
   html, body {
     margin: 0;
     padding: 0;
-    height: 100%;
-    background: #050506;
-    overflow: hidden;
+    min-height: 100%;
+    background: var(--bg);
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    color: #f5f5f7;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: max(28px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+    transition: background 0.2s ease, color 0.2s ease;
   }
 
-  #root {
-    position: relative;
+  .page {
     width: 100%;
-    height: 100%;
+    max-width: 420px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
-
-  /* Glass elements must be direct children of #root, and are positioned
-     absolutely (stacked with a fixed gap) instead of flex layout so the
-     library sees a flat child list to walk. */
-  .glass-card {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -68%);
-    width: min(400px, calc(100% - 40px));
-  }
-
-  .glass-cta {
-    position: absolute;
-    left: 50%;
-    bottom: max(88px, calc(env(safe-area-inset-bottom) + 88px));
-    transform: translateX(-50%);
-    width: min(344px, calc(100% - 68px));
-  }
-
-  .fine-print {
-    position: absolute;
-    left: 50%;
-    bottom: max(24px, env(safe-area-inset-bottom));
-    transform: translateX(-50%);
-    width: min(400px, calc(100% - 40px));
-    z-index: 1;
-  }
-
-  /* Background: captured by the shader as the "scene" the glass refracts */
-  #bg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 0;
-  }
-
-  #fallback-bg {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background:
-      radial-gradient(circle at 20% 15%, #ff5f6d 0%, transparent 45%),
-      radial-gradient(circle at 85% 80%, #009efd 0%, transparent 45%),
-      radial-gradient(circle at 60% 30%, #ffd200 0%, transparent 35%),
-      #0a0a0d;
-    display: none;
-  }
-
-  /* ---- Glass card ---- */
-  .glass-card {
-    padding: 40px 28px 32px;
-    color: #f5f5f7;
-  }
-
-  .glass-card > * { position: relative; z-index: 1; }
 
   .icon {
-    width: 68px;
-    height: 68px;
-    border-radius: 20px;
-    margin: 0 auto 20px;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    margin: 12px auto 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255,255,255,0.14);
-    border: 1px solid rgba(255,255,255,0.25);
+    background: var(--icon-fill);
   }
 
-  .icon svg { width: 32px; height: 32px; }
+  .icon svg { width: 30px; height: 30px; }
 
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+  .card {
+    background: var(--card-fill);
+    border-radius: 28px;
+    padding: 28px 24px;
     text-align: center;
-    margin: 0 0 6px;
   }
 
   .eyebrow {
-    text-align: center;
-    font-size: 0.78rem;
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.55);
+    color: var(--text-tertiary);
+    margin: 0 0 6px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     margin: 0 0 16px;
   }
 
   p {
-    font-size: 0.98rem;
+    font-size: 16px;
     line-height: 1.55;
-    color: rgba(245,245,247,0.85);
-    text-align: center;
+    color: var(--text-secondary);
     margin: 0 0 14px;
   }
 
-  .highlight { color: #fff; font-weight: 600; }
+  p:last-child { margin-bottom: 0; }
 
-  .divider {
-    height: 1px;
-    margin: 22px 0 24px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
-  }
+  .highlight { color: var(--text-primary); font-weight: 600; }
 
-  .glass-cta {
-    height: 54px;
-    cursor: pointer;
-  }
-
-  .glass-cta > .cta-label {
-    position: relative;
-    z-index: 1;
-    height: 100%;
+  .cta {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 9px;
-    font-size: 1.02rem;
+    gap: 10px;
+    width: 100%;
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 999px;
+    background: var(--icon-fill);
+    color: var(--icon-glyph);
+    font-size: 16px;
     font-weight: 700;
-    color: #1a1a1a;
-    pointer-events: none;
+    text-decoration: none;
+    border: none;
+    transition: opacity 0.15s ease;
   }
 
-  .glass-cta svg { width: 19px; height: 19px; flex-shrink: 0; }
+  .cta:active { opacity: 0.7; }
+
+  .cta svg { width: 18px; height: 18px; flex-shrink: 0; }
 
   .fine-print {
-    margin-top: 20px;
-    font-size: 0.78rem;
-    line-height: 1.5;
-    color: rgba(255,255,255,0.45);
+    font-size: 13px;
+    color: var(--text-tertiary);
     text-align: center;
+    margin-top: 16px;
+    line-height: 1.5;
   }
 
-  .fine-print a { color: rgba(255,255,255,0.6); }
+  .fine-print a { color: var(--text-secondary); }
 
-  /* Fallback styling used only if WebGL/LiquidGlass fails to initialize */
-  .no-glass .glass-card {
-    background: linear-gradient(155deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04));
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(255,255,255,0.28);
-    border-radius: 32px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+  /* ---- Settings (language + theme), bottom of page ---- */
+  .settings {
+    margin-top: auto;
+    padding-top: 40px;
   }
 
-  .no-glass .glass-cta {
-    background: linear-gradient(155deg, rgba(255,255,255,0.98), rgba(255,255,255,0.85));
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.6);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.9);
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--card-fill);
+    border-radius: 16px;
+    margin-bottom: 10px;
+  }
+
+  .settings-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  select {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--card-fill-strong);
+    border: none;
+    border-radius: 10px;
+    padding: 6px 10px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .theme-toggle {
+    display: flex;
+    background: var(--card-fill-strong);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .theme-toggle button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .theme-toggle button[aria-pressed="true"] {
+    background: var(--icon-fill);
+    color: var(--icon-glyph);
+  }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    padding-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .footer-links a {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    text-decoration: none;
+  }
+
+  .footer-tagline {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    padding-top: 14px;
   }
 </style>
 </head>
 <body>
-  <div id="root">
-    <img id="bg" src="donate-bg.svg" alt="" crossorigin="anonymous">
-    <div id="fallback-bg"></div>
-
-    <div class="glass-card" id="glass-card" data-config='{"blurAmount":0.35,"cornerRadius":32,"refraction":0.55,"chromAberration":0.04,"edgeHighlight":0.12,"shadowOpacity":0.35,"brightness":0.05}'>
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 21s-7.5-4.6-10-9.3C.5 8 2 4.5 5.4 4c2-.3 3.8.6 4.9 2.1a1 1 0 0 0 1.4 0C12.8 4.6 14.6 3.7 16.6 4c3.4.5 4.9 4 3.4 7.7C19.5 16.4 12 21 12 21Z" fill="#fff" fill-opacity="0.92"/>
-        </svg>
-      </div>
-
-      <p class="eyebrow">Downface</p>
-      <h1>Say thanks</h1>
-
-      <p>Downface counts your push-ups with just a phone on the floor. <span class="highlight">No ads. No account. No feature ever locked behind a payment</span> – it's free for everyone, and it stays that way.</p>
-
-      <p>If it's earned a place in your routine and you'd like to leave something for the person building it, that's entirely up to you.</p>
+  <div class="page">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 21s-7.5-4.6-10-9.3C.5 8 2 4.5 5.4 4c2-.3 3.8.6 4.9 2.1a1 1 0 0 0 1.4 0C12.8 4.6 14.6 3.7 16.6 4c3.4.5 4.9 4 3.4 7.7C19.5 16.4 12 21 12 21Z" fill="var(--icon-glyph)"/>
+      </svg>
     </div>
 
-    <a class="glass-cta" id="glass-cta" href="https://www.patreon.com/Proxyare" target="_blank" rel="noopener"
-       data-config='{"cornerRadius":27,"button":true,"brightness":0.4,"refraction":0.4,"chromAberration":0.03,"edgeHighlight":0.15}'>
-      <span class="cta-label">
+    <div class="card">
+      <p class="eyebrow">Downface</p>
+      <h1 data-i18n="title">Say thanks</h1>
+      <p data-i18n="body1">Downface counts your push-ups with just a phone on the floor. <span class="highlight" data-i18n="body1Highlight">No ads. No account. No feature ever locked behind a payment</span> – it's free for everyone, and it stays that way.</p>
+      <p data-i18n="body2">If it's earned a place in your routine and you'd like to leave something for the person building it, that's entirely up to you.</p>
+
+      <a class="cta" href="https://www.patreon.com/Proxyare" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="15" cy="9.5" r="5.5" fill="#FF424D"/>
-          <rect x="3.5" y="3" width="3.4" height="18" rx="1" fill="#1a1a1a"/>
+          <rect x="3.5" y="3" width="3.4" height="18" rx="1" fill="var(--icon-glyph)"/>
         </svg>
-        Visit Patreon
-      </span>
-    </a>
+        <span data-i18n="cta">Visit Patreon</span>
+      </a>
+    </div>
 
-    <p class="fine-print">A voluntary tip, nothing more – it doesn't unlock anything in the app.<br>Questions? <a href="mailto:arslanabdiqul08@gmail.com">Email the developer</a></p>
+    <p class="fine-print" data-i18n="finePrint">A voluntary tip, nothing more – it doesn't unlock anything in the app.</p>
+
+    <div class="settings">
+      <div class="settings-row">
+        <span class="settings-label" data-i18n="languageLabel">Language</span>
+        <select id="lang-select"></select>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label" data-i18n="appearanceLabel">Appearance</span>
+        <div class="theme-toggle" id="theme-toggle">
+          <button type="button" data-theme-choice="light" data-i18n="light">Light</button>
+          <button type="button" data-theme-choice="dark" data-i18n="dark">Dark</button>
+        </div>
+      </div>
+
+      <div class="footer-links">
+        <a href="privacy.html" data-i18n="privacy">Privacy Policy</a>
+        <a href="terms.html" data-i18n="terms">Terms of Use</a>
+        <a href="support.html" data-i18n="support">Support</a>
+      </div>
+      <p class="footer-tagline" data-i18n="tagline">made with love, no ads, no tracking</p>
+    </div>
   </div>
 
-  <script type="module">
-    import { LiquidGlass } from 'https://cdn.jsdelivr.net/npm/@ybouane/liquidglass@1.0.3/dist/index.js';
+  <script>
+    const STRINGS = {
+      en: { title: "Say thanks", body1: 'Downface counts your push-ups with just a phone on the floor. <span class="highlight">No ads. No account. No feature ever locked behind a payment</span> – it\'s free for everyone, and it stays that way.', body2: "If it's earned a place in your routine and you'd like to leave something for the person building it, that's entirely up to you.", cta: "Visit Patreon", finePrint: "A voluntary tip, nothing more – it doesn't unlock anything in the app.", languageLabel: "Language", appearanceLabel: "Appearance", light: "Light", dark: "Dark", privacy: "Privacy Policy", terms: "Terms of Use", support: "Support", tagline: "made with love, no ads, no tracking" },
+      ru: { title: "Спасибо", body1: 'Downface считает ваши отжимания, используя только телефон на полу. <span class="highlight">Без рекламы. Без аккаунта. Ни одна функция никогда не будет платной</span> – приложение бесплатно для всех и останется таким.', body2: "Если оно нашло место в вашей рутине и вы хотите оставить что-то для его автора – решать вам.", cta: "Перейти в Patreon", finePrint: "Добровольные чаевые, не более – это никак не влияет на приложение.", languageLabel: "Язык", appearanceLabel: "Тема", light: "Светлая", dark: "Тёмная", privacy: "Политика конфиденциальности", terms: "Условия использования", support: "Поддержка", tagline: "сделано с любовью, без рекламы, без слежки" },
+      kk: { title: "Рахмет айту", body1: 'Downface жаттығуларыңызды тек телефонды еденге қою арқылы санайды. <span class="highlight">Жарнамасыз. Аккаунтсыз. Ешбір мүмкіндік ешқашан ақылы болмайды</span> – қолданба барлығына тегін және солай қалады.', body2: "Егер ол сіздің күнделікті жаттығуыңызда орын алса және авторға алғыс білдіргіңіз келсе – бұл толығымен сіздің шешіміңіз.", cta: "Patreon-ға өту", finePrint: "Ерікті сыйақы ғана – бұл қолданбаға ешқандай әсер етпейді.", languageLabel: "Тіл", appearanceLabel: "Тақырып", light: "Ашық", dark: "Күңгірт", privacy: "Құпиялылық саясаты", terms: "Пайдалану шарттары", support: "Қолдау", tagline: "сүйіспеншілікпен жасалған, жарнамасыз, бақылаусыз" },
+      de: { title: "Danke sagen", body1: 'Downface zählt deine Liegestütze nur mit dem Handy auf dem Boden. <span class="highlight">Keine Werbung. Kein Konto. Keine Funktion ist je kostenpflichtig</span> – die App ist für alle kostenlos und bleibt es.', body2: "Wenn sie sich einen Platz in deiner Routine verdient hat und du dem Entwickler etwas dalassen möchtest, liegt das ganz bei dir.", cta: "Patreon besuchen", finePrint: "Ein freiwilliges Trinkgeld, nichts weiter – es schaltet nichts in der App frei.", languageLabel: "Sprache", appearanceLabel: "Erscheinungsbild", light: "Hell", dark: "Dunkel", privacy: "Datenschutzerklärung", terms: "Nutzungsbedingungen", support: "Support", tagline: "mit Liebe gemacht, keine Werbung, kein Tracking" },
+      es: { title: "Dar las gracias", body1: 'Downface cuenta tus flexiones solo con el teléfono en el suelo. <span class="highlight">Sin anuncios. Sin cuenta. Ninguna función estará jamás detrás de un pago</span> – es gratis para todos y seguirá siéndolo.', body2: "Si se ha ganado un lugar en tu rutina y quieres dejar algo para quien la desarrolla, es completamente decisión tuya.", cta: "Visitar Patreon", finePrint: "Una propina voluntaria, nada más – no desbloquea nada en la app.", languageLabel: "Idioma", appearanceLabel: "Apariencia", light: "Claro", dark: "Oscuro", privacy: "Política de privacidad", terms: "Términos de uso", support: "Soporte", tagline: "hecho con cariño, sin anuncios, sin rastreo" },
+      fr: { title: "Dire merci", body1: "Downface compte tes pompes avec juste le téléphone posé au sol. <span class=\"highlight\">Pas de pub. Pas de compte. Aucune fonctionnalité jamais payante</span> – l'application est gratuite pour tous et le restera.", body2: "Si elle a trouvé sa place dans ta routine et que tu veux laisser quelque chose pour la personne qui la développe, c'est entièrement à toi de voir.", cta: "Visiter Patreon", finePrint: "Un pourboire volontaire, rien de plus – cela ne débloque rien dans l'application.", languageLabel: "Langue", appearanceLabel: "Apparence", light: "Clair", dark: "Sombre", privacy: "Politique de confidentialité", terms: "Conditions d'utilisation", support: "Support", tagline: "fait avec amour, sans pub, sans pistage" },
+      ja: { title: "感謝を伝える", body1: '床に置いたスマホだけでDownfaceは腕立て伏せを数えます。<span class="highlight">広告なし。アカウント不要。どの機能も課金で制限されることはありません</span> – 誰でも無料で、これからもそうです。', body2: "習慣の一部になり、開発者に何か残したいと思ったら、それはあなた次第です。", cta: "Patreonを見る", finePrint: "任意のチップであり、それ以上のものではありません – アプリの機能には影響しません。", languageLabel: "言語", appearanceLabel: "外観", light: "ライト", dark: "ダーク", privacy: "プライバシーポリシー", terms: "利用規約", support: "サポート", tagline: "愛を込めて作られました。広告なし、追跡なし" },
+      pt: { title: "Dizer obrigado", body1: 'O Downface conta suas flexões só com o celular no chão. <span class="highlight">Sem anúncios. Sem conta. Nenhum recurso jamais será pago</span> – é grátis para todos e continuará sendo.', body2: "Se ele conquistou um lugar na sua rotina e você quiser deixar algo para quem o desenvolve, a decisão é totalmente sua.", cta: "Visitar Patreon", finePrint: "Uma gorjeta voluntária, nada mais – não desbloqueia nada no aplicativo.", languageLabel: "Idioma", appearanceLabel: "Aparência", light: "Claro", dark: "Escuro", privacy: "Política de Privacidade", terms: "Termos de Uso", support: "Suporte", tagline: "feito com carinho, sem anúncios, sem rastreamento" },
+      "zh-Hans": { title: "表达感谢", body1: '仅需将手机放在地上，Downface 即可为你计数俯卧撑。<span class="highlight">无广告。无需账户。任何功能永远不会收费</span> – 对所有人免费，并将始终如此。', body2: "如果它已成为你日常训练的一部分，并且你想为开发者留下点什么，这完全由你决定。", cta: "访问 Patreon", finePrint: "只是自愿的打赏，仅此而已 – 不会解锁应用内任何内容。", languageLabel: "语言", appearanceLabel: "外观", light: "浅色", dark: "深色", privacy: "隐私政策", terms: "使用条款", support: "支持", tagline: "用心制作，无广告，无跟踪" },
+    };
 
-    async function boot() {
-      try {
-        const root = document.querySelector('#root');
-        const glassElements = [
-          document.querySelector('#glass-card'),
-          document.querySelector('#glass-cta'),
-        ];
+    const LANG_NAMES = { en: "English", ru: "Русский", kk: "Қазақша", de: "Deutsch", es: "Español", fr: "Français", ja: "日本語", pt: "Português", "zh-Hans": "中文" };
 
-        await LiquidGlass.init({ root, glassElements });
-      } catch (err) {
-        console.warn('LiquidGlass unavailable, using CSS fallback', err);
-        document.getElementById('bg').style.display = 'none';
-        document.getElementById('fallback-bg').style.display = 'block';
-        document.body.classList.add('no-glass');
+    function detectLang() {
+      const stored = localStorage.getItem("df_lang");
+      if (stored && STRINGS[stored]) return stored;
+      const browserLangs = navigator.languages || [navigator.language || "en"];
+      for (const bl of browserLangs) {
+        const lower = bl.toLowerCase();
+        if (lower.startsWith("zh")) return "zh-Hans";
+        const short = lower.split("-")[0];
+        if (STRINGS[short]) return short;
       }
+      return "en";
     }
 
-    boot();
+    function applyLang(lang) {
+      const dict = STRINGS[lang] || STRINGS.en;
+      document.documentElement.lang = lang === "zh-Hans" ? "zh-Hans" : lang;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key] !== undefined) el.innerHTML = dict[key];
+      });
+      localStorage.setItem("df_lang", lang);
+    }
+
+    function detectTheme() {
+      const stored = localStorage.getItem("df_theme");
+      if (stored === "light" || stored === "dark") return stored;
+      return null; // follow system
+    }
+
+    function applyTheme(theme) {
+      if (theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("df_theme", theme);
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+        localStorage.removeItem("df_theme");
+      }
+      const effective = theme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.querySelectorAll("#theme-toggle button").forEach(btn => {
+        btn.setAttribute("aria-pressed", String(btn.dataset.themeChoice === effective));
+      });
+    }
+
+    const currentLang = detectLang();
+    applyLang(currentLang);
+
+    const langSelect = document.getElementById("lang-select");
+    Object.keys(STRINGS).forEach(code => {
+      const opt = document.createElement("option");
+      opt.value = code;
+      opt.textContent = LANG_NAMES[code] || code;
+      if (code === currentLang) opt.selected = true;
+      langSelect.appendChild(opt);
+    });
+    langSelect.addEventListener("change", () => applyLang(langSelect.value));
+
+    applyTheme(detectTheme());
+    document.querySelectorAll("#theme-toggle button").forEach(btn => {
+      btn.addEventListener("click", () => applyTheme(btn.dataset.themeChoice));
+    });
   </script>
 </body>
 </html>
