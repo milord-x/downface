@@ -2,49 +2,250 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Downface – Say Thanks</title>
 <style>
-  :root {
-    color-scheme: light dark;
+  :root { color-scheme: dark; }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
   }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #050506;
+    overflow: hidden;
+  }
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 48px 24px 80px;
-    line-height: 1.6;
-    color: #1a1a1a;
-    background: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    color: #f5f5f7;
   }
-  @media (prefers-color-scheme: dark) {
-    body { color: #e8e8e8; background: #111; }
+
+  #root {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(24px, env(safe-area-inset-top)) 20px max(40px, env(safe-area-inset-bottom));
   }
+
+  /* Background: captured by the shader as the "scene" the glass refracts */
+  #bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  #fallback-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(circle at 20% 15%, #ff5f6d 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, #009efd 0%, transparent 45%),
+      radial-gradient(circle at 60% 30%, #ffd200 0%, transparent 35%),
+      #0a0a0d;
+    display: none;
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ---- Glass card (direct child of #root) ---- */
+  .glass-card {
+    position: relative;
+    width: 100%;
+    padding: 40px 28px 32px;
+    color: #f5f5f7;
+  }
+
+  .glass-card > * { position: relative; z-index: 1; }
+
+  .icon {
+    width: 68px;
+    height: 68px;
+    border-radius: 20px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+
+  .icon svg { width: 32px; height: 32px; }
+
   h1 {
-    font-size: 1.6rem;
-    margin-bottom: 4px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-align: center;
+    margin: 0 0 6px;
   }
-  .updated {
-    color: #888;
-    font-size: 0.9rem;
-    margin-bottom: 32px;
+
+  .eyebrow {
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin: 0 0 16px;
   }
+
   p {
-    margin: 0 0 20px;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: rgba(245,245,247,0.85);
+    text-align: center;
+    margin: 0 0 14px;
   }
-  a {
-    color: #0a7cff;
+
+  .highlight { color: #fff; font-weight: 600; }
+
+  .divider {
+    height: 1px;
+    margin: 22px 0 24px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  }
+
+  /* ---- Glass button (direct child of #root, positioned relative to card via wrapper) ---- */
+  .cta-wrap {
+    width: 100%;
+    padding: 0 28px;
+    margin-top: -12px;
+  }
+
+  .glass-cta {
+    position: relative;
+    width: 100%;
+    height: 54px;
+    cursor: pointer;
+  }
+
+  .glass-cta > .cta-label {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    pointer-events: none;
+  }
+
+  .glass-cta svg { width: 19px; height: 19px; flex-shrink: 0; }
+
+  .fine-print {
+    margin-top: 20px;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.45);
+    text-align: center;
+  }
+
+  .fine-print a { color: rgba(255,255,255,0.6); }
+
+  /* Fallback styling used only if WebGL/LiquidGlass fails to initialize */
+  .no-glass .glass-card {
+    background: linear-gradient(155deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04));
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+
+  .no-glass .glass-cta {
+    background: linear-gradient(155deg, rgba(255,255,255,0.98), rgba(255,255,255,0.85));
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.9);
   }
 </style>
 </head>
 <body>
-  <h1>Say Thanks</h1>
-  <p class="updated">Downface for iOS</p>
+  <div id="root">
+    <img id="bg" src="donate-bg.svg" alt="" crossorigin="anonymous">
+    <div id="fallback-bg"></div>
 
-  <p>Downface is free, with no ads, no tracking, and no account required. It always will be – nothing here unlocks any feature or content in the app.</p>
+    <div class="content">
+      <div class="glass-card" id="glass-card" data-config='{"blurAmount":0.35,"cornerRadius":32,"refraction":0.55,"chromAberration":0.04,"edgeHighlight":0.12,"shadowOpacity":0.35,"brightness":0.05}'>
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21s-7.5-4.6-10-9.3C.5 8 2 4.5 5.4 4c2-.3 3.8.6 4.9 2.1a1 1 0 0 0 1.4 0C12.8 4.6 14.6 3.7 16.6 4c3.4.5 4.9 4 3.4 7.7C19.5 16.4 12 21 12 21Z" fill="#fff" fill-opacity="0.92"/>
+          </svg>
+        </div>
 
-  <p>If you'd like to say thanks anyway, you're welcome to leave a voluntary tip on <a href="https://www.patreon.com/Proxyare">Patreon</a>. It's entirely optional and has no effect on what the app does for you.</p>
+        <p class="eyebrow">Downface</p>
+        <h1>Say thanks</h1>
 
-  <p>Questions or feedback: <a href="mailto:arslanabdiqul08@gmail.com">arslanabdiqul08@gmail.com</a>.</p>
+        <p>Downface counts your push-ups with just a phone on the floor. <span class="highlight">No ads. No account. No feature ever locked behind a payment</span> – it's free for everyone, and it stays that way.</p>
+
+        <p>If it's earned a place in your routine and you'd like to leave something for the person building it, that's entirely up to you.</p>
+
+        <div class="divider"></div>
+      </div>
+
+      <div class="cta-wrap">
+        <a class="glass-cta" id="glass-cta" href="https://www.patreon.com/Proxyare" target="_blank" rel="noopener"
+           data-config='{"cornerRadius":27,"button":true,"brightness":0.4,"refraction":0.4,"chromAberration":0.03,"edgeHighlight":0.15}'>
+          <span class="cta-label">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="15" cy="9.5" r="5.5" fill="#FF424D"/>
+              <rect x="3.5" y="3" width="3.4" height="18" rx="1" fill="#1a1a1a"/>
+            </svg>
+            Visit Patreon
+          </span>
+        </a>
+      </div>
+
+      <p class="fine-print">A voluntary tip, nothing more – it doesn't unlock anything in the app.<br>Questions? <a href="mailto:arslanabdiqul08@gmail.com">Email the developer</a></p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { LiquidGlass } from 'https://cdn.jsdelivr.net/npm/@ybouane/liquidglass@1.0.3/dist/index.js';
+
+    async function boot() {
+      try {
+        const root = document.querySelector('#root');
+        const glassElements = [
+          document.querySelector('#glass-card'),
+          document.querySelector('#glass-cta'),
+        ];
+
+        await LiquidGlass.init({ root, glassElements });
+      } catch (err) {
+        console.warn('LiquidGlass unavailable, using CSS fallback', err);
+        document.getElementById('bg').style.display = 'none';
+        document.getElementById('fallback-bg').style.display = 'block';
+        document.body.classList.add('no-glass');
+      }
+    }
+
+    boot();
+  </script>
 </body>
 </html>
