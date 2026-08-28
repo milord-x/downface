@@ -74,6 +74,7 @@
   }
 
   .icon {
+    position: relative;
     width: 76px;
     height: 76px;
     border-radius: 20px;
@@ -81,7 +82,26 @@
     overflow: hidden;
   }
 
-  .icon img { width: 100%; height: 100%; display: block; }
+  .icon img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* App icon is black-bg/white-glyph by default; swap to the inverted
+     white-bg/black-glyph version on dark theme so it doesn't blend into
+     the page background. */
+  .icon-light { display: none; }
+
+  html[data-theme="dark"] .icon-dark { display: none; }
+  html[data-theme="dark"] .icon-light { display: block; }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) .icon-dark { display: none; }
+    html:not([data-theme="light"]) .icon-light { display: block; }
+  }
 
   .card {
     background: var(--card-fill);
@@ -235,7 +255,8 @@
 <body>
   <div class="page">
     <div class="icon">
-      <img src="app-icon.webp" alt="Downface" width="256" height="256">
+      <img class="icon-dark" src="app-icon.webp" alt="Downface" width="256" height="256">
+      <img class="icon-light" src="app-icon-light.webp" alt="Downface" width="256" height="256">
     </div>
 
     <div class="card">
