@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Downface — Privacy Policy</title>
+<title>Downface – Privacy Policy</title>
 <style>
   :root {
     color-scheme: light dark;
@@ -24,6 +24,10 @@
     font-size: 1.6rem;
     margin-bottom: 4px;
   }
+  h2 {
+    font-size: 1.1rem;
+    margin: 32px 0 12px;
+  }
   .updated {
     color: #888;
     font-size: 0.9rem;
@@ -40,7 +44,11 @@
 
   <p>Downface doesn't have a server, an account system, or analytics of any kind. There's no login, so there's no account to hack and no email address stored anywhere.</p>
 
-  <p>The camera turns on only while you're actively doing a set, and only to track how your head moves so the app can count reps. No video, photo, or frame from the camera is ever saved, sent anywhere, or seen by anyone but you – it's processed live on your device and then it's gone.</p>
+  <h2>Face data and the TrueDepth camera</h2>
+
+  <p>Downface uses the TrueDepth camera and Apple's ARKit face-tracking APIs to measure the distance between your face and the phone screen while you do a set. That distance measurement – not an image, not a 3D mesh, not any other representation of your face – is the only thing the app reads from the camera, and it's used solely to detect and count reps in real time.</p>
+
+  <p>This face data is processed entirely on your device and is never saved to disk, never leaves your device, and is never transmitted to Downface's developer or to any third party. It exists only for the fraction of a second it takes to compute the current distance value, then it's discarded. The camera turns on only while you're actively doing a set.</p>
 
   <p>Your workout history (every set, every rep, every date) is stored locally in a small database on your phone. It only leaves the device if you export it yourself as a backup file, or if you turn on iCloud backup in Settings.</p>
 

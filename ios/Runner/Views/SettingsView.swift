@@ -275,7 +275,7 @@ struct SettingsView: View {
 
             SparkleField()
 
-            Link(destination: URL(string: "https://www.patreon.com/cw/Proxyare/membership")!) {
+            Link(destination: URL(string: "https://milord-x.github.io/downface/donate.html")!) {
                 HStack(spacing: 14) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -287,10 +287,10 @@ struct SettingsView: View {
                     .frame(width: 48, height: 48)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Support Downface")
+                        Text("Say thanks")
                             .font(DFType.body.weight(.bold))
                             .foregroundStyle(DFColor.textPrimary)
-                        Text("Back the project on Patreon")
+                        Text("Free app, always. Optional tip if you'd like.")
                             .font(DFType.caption)
                             .foregroundStyle(DFColor.textSecondary)
                     }
