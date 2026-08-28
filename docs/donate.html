@@ -52,48 +52,79 @@
   html, body {
     margin: 0;
     padding: 0;
-    min-height: 100%;
+    height: 100%;
     background: var(--bg);
+    overflow: hidden;
   }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
     color: var(--text-primary);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: max(28px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
     transition: background 0.2s ease, color 0.2s ease;
   }
 
-  .page {
+  #root {
+    position: relative;
     width: 100%;
-    max-width: 420px;
-    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    padding: max(28px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
   }
+
+  /* Background the shader reads as the "scene" behind the glass – a few
+     soft, low-contrast tinted patches in the theme's own palette so the
+     glass has something to refract without turning the page colorful. */
+  #bg-tint {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  #bg-tint span {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+  }
+
+  #bg-tint .b1 { width: 60vw; height: 60vw; top: -10vw; left: -20vw; background: var(--text-primary); opacity: 0.05; }
+  #bg-tint .b2 { width: 55vw; height: 55vw; bottom: 5vh; right: -18vw; background: var(--text-primary); opacity: 0.04; }
+  #bg-tint .b3 { width: 40vw; height: 40vw; top: 45%; left: 55%; background: var(--text-primary); opacity: 0.03; }
+
+  /* Every direct child of #root below sits above the tint layer and
+     shares the same max width so the page reads as one column. */
+  #root > * {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 380px;
+    flex-shrink: 0;
+  }
+
+  #bg-tint { max-width: none; }
 
   .icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
+    width: 76px;
+    height: 76px;
+    border-radius: 20px;
     margin: 12px auto 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--icon-fill);
+    display: block;
+    overflow: hidden;
   }
 
-  .icon svg { width: 30px; height: 30px; }
+  .icon img { width: 100%; height: 100%; display: block; }
 
   .card {
-    background: var(--card-fill);
     border-radius: 28px;
     padding: 28px 24px;
     text-align: center;
   }
+
+  .card > * { position: relative; z-index: 1; }
 
   .eyebrow {
     font-size: 13px;
@@ -123,26 +154,28 @@
   .highlight { color: var(--text-primary); font-weight: 600; }
 
   .cta {
+    display: block;
+    height: 54px;
+    margin-top: 20px;
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--text-primary);
+  }
+
+  .cta-label {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    width: 100%;
-    margin-top: 20px;
-    padding: 16px 20px;
-    border-radius: 999px;
-    background: var(--icon-fill);
-    color: var(--icon-glyph);
+    height: 100%;
     font-size: 16px;
     font-weight: 700;
-    text-decoration: none;
-    border: none;
-    transition: opacity 0.15s ease;
+    pointer-events: none;
   }
 
-  .cta:active { opacity: 0.7; }
-
-  .cta svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .cta-label svg { width: 18px; height: 18px; flex-shrink: 0; }
 
   .fine-print {
     font-size: 13px;
@@ -156,8 +189,7 @@
 
   /* ---- Settings (language + theme), bottom of page ---- */
   .settings {
-    margin-top: auto;
-    padding-top: 40px;
+    margin-top: 40px;
   }
 
   .settings-row {
@@ -165,10 +197,11 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    background: var(--card-fill);
     border-radius: 16px;
     margin-bottom: 10px;
   }
+
+  .settings-row > * { position: relative; z-index: 1; }
 
   .settings-label {
     font-size: 15px;
@@ -234,56 +267,74 @@
     color: var(--text-tertiary);
     padding-top: 14px;
   }
+
+  /* Fallback when WebGL/module loading fails: plain flat cards, same as
+     the rest of the app uses outside its floating glass layer. */
+  .no-glass .card,
+  .no-glass .settings-row {
+    background: var(--card-fill);
+  }
+
+  .no-glass .cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--icon-fill);
+  }
+
+  .no-glass .cta-label { color: var(--icon-glyph); }
+  .no-glass #bg-tint { display: none; }
 </style>
 </head>
 <body>
-  <div class="page">
+  <div id="root">
+    <div id="bg-tint"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+
     <div class="icon">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 21s-7.5-4.6-10-9.3C.5 8 2 4.5 5.4 4c2-.3 3.8.6 4.9 2.1a1 1 0 0 0 1.4 0C12.8 4.6 14.6 3.7 16.6 4c3.4.5 4.9 4 3.4 7.7C19.5 16.4 12 21 12 21Z" fill="var(--icon-glyph)"/>
-      </svg>
+      <img src="app-icon.webp" alt="Downface" width="256" height="256">
     </div>
 
-    <div class="card">
+    <div class="card" id="glass-card" data-config='{"blurAmount":0.3,"cornerRadius":28,"refraction":0.45,"chromAberration":0.02,"edgeHighlight":0.1,"shadowOpacity":0.18}'>
       <p class="eyebrow">Downface</p>
       <h1 data-i18n="title">Say thanks</h1>
       <p data-i18n="body1">Downface counts your push-ups with just a phone on the floor. <span class="highlight" data-i18n="body1Highlight">No ads. No account. No feature ever locked behind a payment</span> – it's free for everyone, and it stays that way.</p>
       <p data-i18n="body2">If it's earned a place in your routine and you'd like to leave something for the person building it, that's entirely up to you.</p>
+    </div>
 
-      <a class="cta" href="https://www.patreon.com/Proxyare" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="15" cy="9.5" r="5.5" fill="#FF424D"/>
-          <rect x="3.5" y="3" width="3.4" height="18" rx="1" fill="var(--icon-glyph)"/>
+    <a class="cta" id="glass-cta" href="https://www.patreon.com/Proxyare" target="_blank" rel="noopener"
+       data-config='{"cornerRadius":27,"button":true,"brightness":0.02,"refraction":0.4,"chromAberration":0.02,"edgeHighlight":0.12}'>
+      <span class="cta-label">
+        <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#FF424D" d="M22.957 7.21c-.004-3.064-2.391-5.576-5.191-6.482-3.478-1.125-8.064-.962-11.384.604C2.357 3.231 1.093 7.391 1.046 11.54c-.039 3.411.302 12.396 5.369 12.46 3.765.047 4.326-4.804 6.068-7.141 1.24-1.662 2.836-2.132 4.801-2.618 3.376-.836 5.678-3.501 5.673-7.031Z"/>
         </svg>
         <span data-i18n="cta">Visit Patreon</span>
-      </a>
-    </div>
+      </span>
+    </a>
 
     <p class="fine-print" data-i18n="finePrint">A voluntary tip, nothing more – it doesn't unlock anything in the app.</p>
 
-    <div class="settings">
-      <div class="settings-row">
-        <span class="settings-label" data-i18n="languageLabel">Language</span>
-        <select id="lang-select"></select>
-      </div>
-      <div class="settings-row">
-        <span class="settings-label" data-i18n="appearanceLabel">Appearance</span>
-        <div class="theme-toggle" id="theme-toggle">
-          <button type="button" data-theme-choice="light" data-i18n="light">Light</button>
-          <button type="button" data-theme-choice="dark" data-i18n="dark">Dark</button>
-        </div>
-      </div>
-
-      <div class="footer-links">
-        <a href="privacy.html" data-i18n="privacy">Privacy Policy</a>
-        <a href="terms.html" data-i18n="terms">Terms of Use</a>
-        <a href="support.html" data-i18n="support">Support</a>
-      </div>
-      <p class="footer-tagline" data-i18n="tagline">made with love, no ads, no tracking</p>
+    <div class="settings-row" id="glass-lang" data-config='{"blurAmount":0.25,"cornerRadius":16,"refraction":0.35,"chromAberration":0.015,"edgeHighlight":0.08}'>
+      <span class="settings-label" data-i18n="languageLabel">Language</span>
+      <select id="lang-select"></select>
     </div>
+
+    <div class="settings-row" id="glass-theme" data-config='{"blurAmount":0.25,"cornerRadius":16,"refraction":0.35,"chromAberration":0.015,"edgeHighlight":0.08}'>
+      <span class="settings-label" data-i18n="appearanceLabel">Appearance</span>
+      <div class="theme-toggle" id="theme-toggle">
+        <button type="button" data-theme-choice="light" data-i18n="light">Light</button>
+        <button type="button" data-theme-choice="dark" data-i18n="dark">Dark</button>
+      </div>
+    </div>
+
+    <div class="footer-links">
+      <a href="privacy.html" data-i18n="privacy">Privacy Policy</a>
+      <a href="terms.html" data-i18n="terms">Terms of Use</a>
+      <a href="support.html" data-i18n="support">Support</a>
+    </div>
+    <p class="footer-tagline" data-i18n="tagline">made with love, no ads, no tracking</p>
   </div>
 
-  <script>
+  <script type="module">
     const STRINGS = {
       en: { title: "Say thanks", body1: 'Downface counts your push-ups with just a phone on the floor. <span class="highlight">No ads. No account. No feature ever locked behind a payment</span> – it\'s free for everyone, and it stays that way.', body2: "If it's earned a place in your routine and you'd like to leave something for the person building it, that's entirely up to you.", cta: "Visit Patreon", finePrint: "A voluntary tip, nothing more – it doesn't unlock anything in the app.", languageLabel: "Language", appearanceLabel: "Appearance", light: "Light", dark: "Dark", privacy: "Privacy Policy", terms: "Terms of Use", support: "Support", tagline: "made with love, no ads, no tracking" },
       ru: { title: "Спасибо", body1: 'Downface считает ваши отжимания, используя только телефон на полу. <span class="highlight">Без рекламы. Без аккаунта. Ни одна функция никогда не будет платной</span> – приложение бесплатно для всех и останется таким.', body2: "Если оно нашло место в вашей рутине и вы хотите оставить что-то для его автора – решать вам.", cta: "Перейти в Patreon", finePrint: "Добровольные чаевые, не более – это никак не влияет на приложение.", languageLabel: "Язык", appearanceLabel: "Тема", light: "Светлая", dark: "Тёмная", privacy: "Политика конфиденциальности", terms: "Условия использования", support: "Поддержка", tagline: "сделано с любовью, без рекламы, без слежки" },
@@ -358,6 +409,21 @@
     document.querySelectorAll("#theme-toggle button").forEach(btn => {
       btn.addEventListener("click", () => applyTheme(btn.dataset.themeChoice));
     });
+
+    import('https://cdn.jsdelivr.net/npm/@ybouane/liquidglass@1.0.3/dist/index.js')
+      .then(({ LiquidGlass }) => LiquidGlass.init({
+        root: document.getElementById('root'),
+        glassElements: [
+          document.getElementById('glass-card'),
+          document.getElementById('glass-cta'),
+          document.getElementById('glass-lang'),
+          document.getElementById('glass-theme'),
+        ],
+      }))
+      .catch(err => {
+        console.warn('LiquidGlass unavailable, falling back to flat cards', err);
+        document.body.classList.add('no-glass');
+      });
   </script>
 </body>
 </html>
