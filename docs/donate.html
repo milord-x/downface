@@ -89,14 +89,14 @@
   /* App icon is black-bg/white-glyph by default; swap to the inverted
      white-bg/black-glyph version on dark theme so it doesn't blend into
      the page background. */
-  .icon-dark { display: block; }
+  .icon .icon-dark { display: block; }
 
-  html[data-theme="dark"] .icon-dark { display: none; }
-  html[data-theme="dark"] .icon-light { display: block; }
+  html[data-theme="dark"] .icon .icon-dark { display: none; }
+  html[data-theme="dark"] .icon .icon-light { display: block; }
 
   @media (prefers-color-scheme: dark) {
-    html:not([data-theme="light"]) .icon-dark { display: none; }
-    html:not([data-theme="light"]) .icon-light { display: block; }
+    html:not([data-theme="light"]) .icon .icon-dark { display: none; }
+    html:not([data-theme="light"]) .icon .icon-light { display: block; }
   }
 
   .card {
